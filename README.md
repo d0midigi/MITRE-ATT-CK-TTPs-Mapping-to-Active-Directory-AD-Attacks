@@ -29,8 +29,8 @@ This resource delivers actionable threat intelligence tailored for Red Teams, pe
 
 
 ## Credential Access (TA0006)
-- - **OS Credential Dumping (T1003)**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.
-	- Steal or Forge Authentication Certificates (T1649): Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.
+**OS Credential Dumping (T1003)**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.
+**Steal or Forge Authentication Certificates (T1649)**: Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.
 - Tools: Mimikatz, Dumpert, Impacket (`secretsdump`), BloodHound.
 
 - Lateral Movement (TA0008):
