@@ -1,19 +1,19 @@
 # MITRE ATT&CK Tactics, Techniques & Procedures (TTPs) Mapping to Active Directory (AD) Attacks
 > This in-depth guide maps popular and commonly-used Active Directory (AD) attack vectors to the MITRE ATT&CK® Framework. It provides a deep dive into TTPs for credential dumping, lateral movement, persistence, privilege escalation, including specialized AD CS exploitation. Designed for high-impact offensive operations, it features detection rules, attack simulations, and Windows-specific mitigation strategies.
 
-> The mapping includes:
+The mapping includes:
 
 * **Toolsets**: Essential software for AD exploitation.
 * **Execution**: Exact command-line syntax for rapid deployment.
 * **Tradecraft**: Pro-tips, best practices, and common pitfalls for offensive tools.
 * **Evasion**: Proven strategies to bypass Blue Team defenses and security controls. 
 
-> Focuses on actionable threat intel. Best for red teamss, offensive security professionals, penetration testers, ethical hackers, purple teams, vulnerability specialists, cybersecurity professional.
+Focuses on actionable threat intel. Best for red teamss, offensive security professionals, penetration testers, ethical hackers, purple teams, vulnerability specialists, cybersecurity professional.
 
-> This resource delivers actionable threat intelligence tailored for Red Teams, penetration testers, ethical hackers, and purple team practitioners looking to harden or exploit AD environments. 
+This resource delivers actionable threat intelligence tailored for Red Teams, penetration testers, ethical hackers, and purple team practitioners looking to harden or exploit AD environments. 
 
-> This repository is intended strictly for educational purposes, designed to assist security professionals, researchers, and ethical hackers in understanding attacker tactics, techniques, and procedures (TTPs) to strengthen defensive strategies. The authors are not liable for any misuse of this information.
-> 
+**This repository is intended strictly for educational purposes, designed to assist security professionals, researchers, and ethical hackers in understanding attacker tactics, techniques, and procedures (TTPs) to strengthen defensive strategies. The authors are not liable for any misuse of this information.**
+ 
 ## Table of Contents
 * [General Info](#general-information)
 * [Technologies Used](#technologies-used)
@@ -28,9 +28,8 @@
 <!-- * [License](#license) -->
 
 
-## General Information
-- - Credential Access (TA0006):
-	- OS Credential Dumping (T1003): Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.
+## Credential Access (TA0006)
+- - **OS Credential Dumping (T1003)**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.
 	- Steal or Forge Authentication Certificates (T1649): Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.
 - Tools: Mimikatz, Dumpert, Impacket (`secretsdump`), BloodHound.
 
