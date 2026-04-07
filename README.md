@@ -37,8 +37,8 @@ This resource delivers actionable threat intelligence tailored for Red Teams, pe
 <!-- * [License](#license) -->
 
 
-## Credential Access [([TA0006])](#https://attack.mitre.org/tactics/TA0006/)
-* **OS Credential Dumping ([T1003])**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.
+## Credential Access [(TA0006)](https://attack.mitre.org/tactics/TA0006/)
+* **OS Credential Dumping** [(T1003)](https://attack.mitre.org/techniques/T1003/003/): Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.
 * **Steal or Forge Authentication Certificates (T1649)**: Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.
 ### Tools
 * Mimikatz
