@@ -1,10 +1,19 @@
-# MITRE-ATT-CK-TTPs-Mapping-to-Active-Directory-AD-Attacks
-Comprehensive mapping of Active Directory (AD) attacks to the MITRE ATT&amp;CK® framework. Covers TTPs for credential dumping, lateral movement, persistence, and privilege escalation with detection rules, attack simulations, and mitigation strategies for Windows/AD environments. Focuses on actionable threat intel.
+# MITRE ATT&CK Tactics, Techniques & Procedures (TTPs) Mapping to Active Directory (AD) Attacks
+> This in-depth guide maps popular and commonly-used Active Directory (AD) attack vectors to the MITRE ATT&CK® Framework. It provides a deep dive into TTPs for credential dumping, lateral movement, persistence, privilege escalation, including specialized AD CS exploitation. Designed for high-impact offensive operations, it features detection rules, attack simulations, and Windows-specific mitigation strategies.
 
-# Project Name
-> Outline a brief description of your project.
-> Live demo [_here_](https://www.example.com). <!-- If you have the project hosted somewhere, include the link here. -->
+> The mapping includes:
 
+* **Toolsets**: Essential software for AD exploitation.
+* **Execution**: Exact command-line syntax for rapid deployment.
+* **Tradecraft**: Pro-tips, best practices, and common pitfalls for offensive tools.
+* **Evasion**: Proven strategies to bypass Blue Team defenses and security controls. 
+
+> Focuses on actionable threat intel. Best for red teamss, offensive security professionals, penetration testers, ethical hackers, purple teams, vulnerability specialists, cybersecurity professional.
+
+> This resource delivers actionable threat intelligence tailored for Red Teams, penetration testers, ethical hackers, and purple team practitioners looking to harden or exploit AD environments. 
+
+> This repository is intended strictly for educational purposes, designed to assist security professionals, researchers, and ethical hackers in understanding attacker tactics, techniques, and procedures (TTPs) to strengthen defensive strategies. The authors are not liable for any misuse of this information.
+> 
 ## Table of Contents
 * [General Info](#general-information)
 * [Technologies Used](#technologies-used)
@@ -20,7 +29,25 @@ Comprehensive mapping of Active Directory (AD) attacks to the MITRE ATT&amp;CK®
 
 
 ## General Information
-- Provide general information about your project here.
+- - Credential Access (TA0006):
+	- OS Credential Dumping (T1003): Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.
+	- Steal or Forge Authentication Certificates (T1649): Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.
+- Tools: Mimikatz, Dumpert, Impacket (`secretsdump`), BloodHound.
+
+- Lateral Movement (TA0008):
+	- Remote Services (T1021): Using valid accounts to move laterally via SMB/Windows Admin Shares, Remote Desktop Protocol (RDP), or Windows Management Instrumentation (WMI).
+	- Pass-the-Hash (PtH) / Pass-the-Ticket (PtT): Utilizing stolen hashes or Kerberos tickets to impersonate users.
+- Tools: PsExec, WMIExec, RDP, BloodHound/SharpHound for path analysis.
+
+- Persistence (TA0003):
+	- Account Manipulation (T1098): Modifying privileged groups, adding keys to `authorized_keys`, or manipulating user attributes.
+	- Golden/Silver Ticket Attacks (T1558): Forging Kerberos Ticket Granting Tickets (TGT) to maintain domain administrator access.
+- Tools: Mimikatz, Rubeus, PowerView.
+
+- Privilege Escalation (TA0004):
+- Abuse Elevation Control Mechanism (T1548): Leveraging UAC bypass, Token Manipulation, or misconfigured Access Control Lists (ACLs).
+* **Tools**: PowerUp, BloodHound. 
+
 - What problem does it (intend to) solve?
 - What is the purpose of your project?
 - Why did you undertake it?
@@ -38,51 +65,6 @@ List the ready features here:
 - Awesome feature 1
 - Awesome feature 2
 - Awesome feature 3
-
-
-## Screenshots
-![Example screenshot](./img/screenshot.png)
-<!-- If you have screenshots you'd like to share, include them here. -->
-
-
-## Setup
-What are the project requirements/dependencies? Where are they listed? A requirements.txt or a Pipfile.lock file perhaps? Where is it located?
-
-Proceed to describe how to install / setup one's local environment / get started with the project.
-
-
-## Usage
-How does one go about using it?
-Provide various use cases and code examples here.
-
-`write-your-code-here`
-
-
-## Project Status
-Project is: _in progress_ / _complete_ / _no longer being worked on_. If you are no longer working on it, provide reasons why.
-
-
-## Room for Improvement
-Include areas you believe need improvement / could be improved. Also add TODOs for future development.
-
-Room for improvement:
-- Improvement to be done 1
-- Improvement to be done 2
-
-To do:
-- Feature to be added 1
-- Feature to be added 2
-
-
-## Acknowledgements
-Give credit here.
-- This project was inspired by...
-- This project was based on [this tutorial](https://www.example.com).
-- Many thanks to...
-
-
-## Contact
-Created by [@flynerdpl](https://www.flynerd.pl/) - feel free to contact me!
 
 
 <!-- Optional -->
