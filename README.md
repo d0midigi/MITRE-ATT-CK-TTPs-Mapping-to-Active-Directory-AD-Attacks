@@ -17,19 +17,28 @@ This resource delivers actionable threat intelligence tailored for Red Teams, pe
 ## Table of Contents
 * [Credential Access (TA0006)](#credential-access)
 * [Lateral Movement (TA0008)](#lateral-movement)
-* [Features](#features)
-* [Screenshots](#screenshots)
-* [Setup](#setup)
-* [Usage](#usage)
-* [Project Status](#project-status)
-* [Room for Improvement](#room-for-improvement)
-* [Acknowledgements](#acknowledgements)
+* [Persistence (TA0003)](#persistence)
+* [Privilege Escalation (TA0004)](#privilege-escalation)
+* [Actionable Mitigation and Defense Strategies](#actionable-mitigation-and-defense-strategies)
+* [Monitoring (Detection)](#monitoring)
+* [Offensive Security Best Practices & Blue Team Advice](#offensive-security-best-practices)
+* [Core Active Directory TTPs](#core-ad-ttps)
+* [Discovery](#discovery)
+* [Lateral Movement & Persistence](#lateral-movement-and-persistence)
+* [Active Directory CS (Certificate Services)](#ad-cs)
+* [Delegation & Relationship Attacks](#delegation-relationship-attacks)
+* [Manipulation & Impersonation](#manipulation-and-impersonation)
+* [Network & Protocol Attacks (In-Network)](#network-and-protocol-attacks)
+* [Red Team Execution: Path to Domain Admin](#red-team-execution)
+* [Technical Deep-Dive Into Evasion, Command Syntax, and Logical Graphing for Red Team Operations](#technical-deep-dive)
 * [Contact](#contact)
+* [Contact](#contact)
+
 <!-- * [License](#license) -->
 
 
-## Credential Access (TA0006)
-* **OS Credential Dumping (T1003)**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.
+## Credential Access ([TA0006])(#https://attack.mitre.org/tactics/TA0006/)
+* **OS Credential Dumping ([T1003])**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.
 * **Steal or Forge Authentication Certificates (T1649)**: Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.
 ### Tools
 * Mimikatz
