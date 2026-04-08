@@ -13,15 +13,17 @@ The mapping includes:
 🔸This resource delivers actionable threat intelligence tailored for Red Teams, penetration testers, ethical hackers, and purple team practitioners looking to harden or exploit AD environments. 
 ## Disclaimer
 ```
-+--------------------------------------------------------------------------------------------------------+
-|  ⚠️ Educational Use Only ⚠️                                                                           |
-|       This repository is intended strictly for educational purposes, designed to assist security       |
-|       professionals, researchers, and thical hackers in understanding attacker tactics, techniques,    |
-|       and procedures (TTPs) to strengthen defensive strategies **The authors are not liable for any    |
-|       misuse of this information. Misuse or abuse of the material(s) provided herein against degital   |
-|       devices or networks forwhcih you do not explicitly own or do not have explicit written           |
-|       authorization (permission) from device and/or network owners may result in legal action.         |
-+--------------------------------------------------------------------------------------------------------+
++------------------------------------------------------------------------------------------------+
+|  ⚠️ EDUCATIONAL USE ONLY ⚠️                                                                   |
+|                                                                                                |
+|       This repository is intended strictly for educational purposes, designed to assist        |
+|       security professionals, researchers, and thical hackers in understanding attacker        |
+|       tactics, techniques, and procedures (TTPs) to strengthen defensive strategies.           |
+|       **The authors are not liable for any misuse of this information.**Misuse or abuse        |
+|       of the material(s) provided herein against degital devices or networks for which         |
+|       you do not explicitly own or do not have explicit written authorization (permission)     |
+|       from device and/or network owners may result in legal action.                            |
++------------------------------------------------------------------------------------------------+
 ```
                                                                    
 ---
