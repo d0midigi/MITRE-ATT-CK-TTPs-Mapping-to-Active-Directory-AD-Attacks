@@ -58,7 +58,7 @@ For brevity and clarity. the term "individual" will be used to represent both at
 # Credential Access Tools
 ## Mimikatz
 * Mimikatz is a powerful open-source post-exploitation tool designed to extract plain-text passwords, hashes, PINs, and Kerberos tickets directly from Windows memory (LSASS process). It is primarily used by individuals to escalate privileges, move laterally through networks, and create persistent access through techniques like pass-the-hash and Golden Ticket attacks.
-### Key Capabilities and Functions of Mimikatz
+## Key Capabilities and Functions of Mimikatz
 * **Credential Dumping (`sekurlsa`)**: Extracts credentials from memory, including user passwords in plain text, NTLM hashes, and Kerberos tickets.
 * **Pass-the-Hash (PtH)**: Uses stolen NTLM hashes to authenticate as a user without needing the original password.
 * **Pass-the-Ticket/Golden Ticket**: Generates forged Kerberos tickets to gain unauthorized domain access and impersonate any user, often indefinitely.
@@ -66,30 +66,30 @@ For brevity and clarity. the term "individual" will be used to represent both at
 * **Certificate Export**: Exports certificates and private keys from the Windows Certificate Store, even if marked as non-exportable.
 * **Fileless Execution**: Often executed in memory via PowerShell or similar methods to avoid detection on disk.
 * **Dumpert**: [Dumpert](https://github.com/outflanknl/dumpert) is an open-source, specialized security tool designed to create a memory dump of the Local Security Authority Subsystem Service (LSASS) process on Windows operating systems. It is primarily used during red team engagements and penetration tests to steal credentials, such as password hashes and Kerberos tickets, while avoiding detection by antivirus (AV) and Endpoint Detection and Response (EDR) solutions. 
-### Mimikatz Key Functions and Capabilities
+## Mimikatz Key Functions and Capabilities
 * **LSASS Memory Dumping**: It extracts the memory of `lsass.exe`, where sensitive user credentials are stored, saving them into a `.dmp` file.
 * **AV/EDR Evasion**: Unlike standard tools (like [Sysinternals ProcDump](https://learn.microsoft.com/en-us/sysinternals/downloads/procdump) or Mimikatz), Dumpert avoids using common Windows API functions that are heavily monitored by security software.
 * **Direct System Calls [(Syscalls)](https://github.com/j00ru/windows-syscalls)**: It bypasses user-mode hooks by executing system calls directly to the kernel, making it difficult for security products to detect the activity.
 * **API Unhooking**: The tool unhooks API functions to further mask its activities.
 * **Fileless Operation (sRDI)**: It provides an sRDI (shellcode Reflective DLL Injection) version, allowing it to be injected directly into memory via [Cobalt Strike](https://github.com/cobalt-strike), thus avoiding writing files to the disk. 
-### Mimikatz Usage Context
+## Mimikatz Usage Context
 * **Credential Theft**: Once the `lsass.dmp` file is created, it can be analyzed offline not only by using Mimikatz, but other credential access tool variants will work such as [Pypykatz](https://github.com/skelsec/pypykatz) to extract plaintext passwords and hashes.
 * **Lateral Movement**: The stolen credentials enable individuals to move laterally across a network.
 # Post-Exploitation
 Post-exploitation in Active Directory (AD) refers to the pre-attack phase where an individual has already gained an initial foothold (e.g., a standard user's credentials or a compromised workstation) and is now working to expand their influence, elevate privileges, and achieve their ultimate objective within the domain. In a flat network, post-exploitation is the bridge between "landing" and pwning the entire enterprise.
 ## Primary Goals of Post-Exploitation
-### Privilege Escalation
+## Privilege Escalation
 * Moving from a standard user to a high-privileged account (Domain Admin, Enterprise Admin).
-### Lateral Movement
+## Lateral Movement
 * Jumping from the initial compromised machine to other servers or workstations to find more sensitive treasure troves of data.
-### Persistence
+## Persistence
 * Ensuring the individual can get back into the network even if the initial entry point is closed, blocked, or a user changes their password.
-### Data Exfiltration
+## Data Exfiltration
 * Locating and stealing intellectual property, financial records, or PII (Personally Identifiable Information).
-### Domain Dominance
+## Domain Dominance
 * Achieving a state where the individual "is" the network (e.g., controlling the Domain Controllers).
 ## Common Post-Exploitation Techniques
-### 1. Enumeration (Mapping the Terrain)
+## 1. Enumeration (Mapping the Terrain)
 * The individual needs to understand the AD structure to identify targets precisely.
 	* **BloodHound/SharpHound**: Mapping hidden permission relationships and attack paths to Domain Admin.
 	* **PowerView**: Searching for "high-value" targets, such as machines with Domain Admins logged in.
@@ -129,19 +129,15 @@ Ensuring long-term access that survives reboots and password resets.
 * **Endpoint Detection & Response (EDR)**: Monitoring for suspicious activities like LSASS memory dumping or unauthorized WMI calls.
 * **Privileged Access Management (PAM)**: Using "Just-In-Time" administration to reduce the window of opportunity for individuals.
 ## Tools Used
-### Impacket (`secretsdump`)
+## Impacket (`secretsdump`)
 * Impacket's `secretsdump.py` is a powerful, open-source Python script used to remotely or locally extract sensitive secrets—such as user password hashes and credentials—from Windows systems without installing an agent on the target machine. It is widely used by penetration testers for security auditing and by individuals for lateral movement and privilege escalation.
 ## Core Functionalities of `secretsdump.py`
-
-
-Here's a **secretsdump.py** code demonstration for the techniques you listed, including **SAM/LSA secrets**, **NTDS.dit extraction**, **DCSync**, **offline hive parsing**, and **Volume Shadow Copy (VSS)**. This script is part of the **Impacket** toolkit and is commonly used in **TA0004 (Privilege Escalation)** for credential dumping and domain analysis.
-
+The script below is part of the **Impacket** toolkit and is commonly used in **TA0004 (Privilege Escalation)** for credential dumping and domain analysis.
 ---
 
 ### **1. SAM and LSA Secrets Extraction**
 This technique extracts **NTLM hashes, cleartext passwords, and cached domain credentials** from a local machine (e.g., a domain controller or a compromised host).
-
-```bash
+```
 # Example: Extract SAM and LSA secrets from a target machine (requires local admin rights)
 secretsdump.py -u Administrator -p "<password>" -ntlm <target_ip>
 ```
@@ -154,30 +150,25 @@ secretsdump.py -u Administrator -p "<password>" -ntlm <target_ip>
 **Notes**:
 - If the target is a domain controller, this can reveal **domain-level secrets** (e.g., **Kerberos keys**, **NTDS.dit**).
 - Replace `<password>` with the local admin password if known, or omit it if using pass-the-hash.
-
 ---
 
-### **2. NTDS.dit Extraction (Domain Controller)**
+## **2. NTDS.dit Extraction (Domain Controller)**
 This technique pulls the **Active Directory database** (`NTDS.dit`) from a domain controller, allowing for **offline analysis** of domain user credentials.
-
-```bash
+```
 # Example: Extract NTDS.dit from a domain controller (requires access to the DC)
 secretsdump.py -justdcs <dc_ip> -user-only
 ```
-
 **Output**:
 - All domain user **NTLM hashes** and **usernames**.
 - Kerberos keys and other domain secrets.
 
 **Notes**:
-- `-justdcs` forces the script to connect to the DC and extract the **NTDS.dit** file.
+- `-justdcs` forces the script to connect to the DC and extract the `NTDS.dit` file.
 - `-user-only` filters output to just domain users (optional).
-- This is often used in conjunction with **offline hive parsing** for deeper analysis.
-
+- This is often used in conjunction with offline hive parsing for deeper analysis.
 ---
-
-### **3. DCSync Attack**
-This technique **mimics a Domain Controller** via the **DRSR protocol** to pull password hashes and other secrets **without executing code on the DC**.
+## **3. DCSync Attack**
+This technique mimics a Domain Controller via the DRSR protocol to pull password hashes and other secrets without executing code on the DC.
 
 ```bash
 # Example: Perform a DCSync attack (requires domain user credentials)
