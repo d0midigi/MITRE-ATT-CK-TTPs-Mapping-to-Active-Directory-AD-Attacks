@@ -14,7 +14,7 @@ The mapping includes:
 
 ```
 |🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|
-||  ⚠️Educational Use Only⚠️                                                                                 ||
+||  <h2> ⚠️Educational Use Only ⚠️</h2>                                                                             ||
 ||  > This repository is intended strictly for educational purposes, designed to assist security professionals,   ||
 ||  researchers, and ethical hackers in understanding attacker tactics, techniques, and procedures (TTPs) to      || ||  strengthen defensive strategies. The authors are not liable for any misuse of this information. Misuse or     ||
 ||  abuse of ||the material provided herein against digital devices or networks for which you do not              ||
