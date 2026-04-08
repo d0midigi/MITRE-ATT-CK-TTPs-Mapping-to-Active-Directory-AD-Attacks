@@ -12,6 +12,7 @@ The mapping includes:
 
 🔸This resource delivers actionable threat intelligence tailored for Red Teams, penetration testers, ethical hackers, and purple team practitioners looking to harden or exploit AD environments. 
 
+```
 |🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|
 ||  ⚠️Educational Use Only⚠️                                                                                 ||
 ||  > This repository is intended strictly for educational purposes, designed to assist security professionals,   ||
@@ -20,6 +21,7 @@ The mapping includes:
 ||  explcitly own or do not have explicit written permission from device and/or network owners is illegal         ||
 ||  and can result in legal action.                                                                               || 
 |🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|🔸|
+```
 ---
 ## Table of Contents
 * [Credential Access (TA0006)](#credential-access)
