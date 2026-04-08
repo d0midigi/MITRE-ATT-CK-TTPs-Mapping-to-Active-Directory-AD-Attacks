@@ -12,7 +12,7 @@ The mapping includes:
 
 🔸This resource delivers actionable threat intelligence tailored for Red Teams, penetration testers, ethical hackers, and purple team practitioners looking to harden or exploit AD environments. 
 
-> ⚠️ Educational Use Only
+> ⚠️ **Educational Use Only**<br>
 > This repository is intended strictly for educational purposes, designed to assist security professionals, researchers, and ethical hackers in understanding attacker tactics, techniques, and procedures (TTPs) to strengthen defensive strategies. The authors are not liable for any misuse of this information. Misuse or abuse of the material provided herein against digital devices or networks for which you do not explcitly own or do not have explicit written permission from device and/or network owners is illegal and can result in legal action.⚠️
 ---
 ## Table of Contents
