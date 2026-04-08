@@ -51,12 +51,12 @@ The mapping includes:
 ## Credential Access [(TA0006)](https://attack.mitre.org/tactics/TA0006/)
 * **OS Credential Dumping** [(T1003)](https://attack.mitre.org/techniques/T1003/003/): OS Credential Dumping is a, if not the, primary method threat actors use to transition from initial system access to full network compromise. By stealing password hashes or plaintext credentials stored in operating system memory or databases, attackers can escalate privileges and move laterally across an environment. This technique is frequently used by ransomware gangs and APT groups.<br>
 **🔸TL;DR**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.🔸
-* **Steal or Forge Authentication Certificates [(T1649)](https://attack.mitre.org/techniques/T1649/)**: Steal or Forge Authentication Certificates (T1649) is a critical MITRE ATT&CK® technique focusing on abusing Active Directory Certificate Services (AD CS) to gain unauthorized access. Because AD CS enables certificate-based authentication (using certificates instead of passwords), compromising the certificate infrastructure allows attackers to bypass traditional password-based security controls, establish long-term persistence, and escalate privileges to the highest levels (e.g., Domain Admin).<br> 
+* **Steal or Forge Authentication Certificates [(T1649)](https://attack.mitre.org/techniques/T1649/)**: Steal or Forge Authentication Certificates is a critical MITRE ATT&CK® technique focusing on abusing Active Directory Certificate Services (AD CS) to gain unauthorized access. Because AD CS enables certificate-based authentication (using certificates instead of passwords), compromising the certificate infrastructure allows attackers to bypass traditional password-based security controls, establish long-term persistence, and escalate privileges to the highest levels (e.g., Domain Admin).<br> 
 **🔸TL;DR**: Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.🔸
-# Tools
+# Tool
 ## Mimikatz
 * Mimikatz is a powerful open-source post-exploitation tool designed to extract plain-text passwords, hashes, PINs, and Kerberos tickets directly from Windows memory (LSASS process). It is primarily used by attackers to escalate privileges, move laterally through networks, and create persistent access through techniques like pass-the-hash and Golden Ticket attacks.
-### Key Capabilities and Functions
+## Key Capabilities and Functions
 * **Credential Dumping (`sekurlsa`)**: Extracts credentials from memory, including user passwords in plain text, NTLM hashes, and Kerberos tickets.
 * **Pass-the-Hash (PtH)**: Uses stolen NTLM hashes to authenticate as a user without needing the original password.
 * **Pass-the-Ticket/Golden Ticket**: Generates forged Kerberos tickets to gain unauthorized domain access and impersonate any user, often indefinitely.
@@ -65,56 +65,56 @@ The mapping includes:
 * **Fileless Execution**: Often executed in memory via PowerShell or similar methods to avoid detection on disk.
 * **Dumpert**: [Dumpert](https://github.com/outflanknl/dumpert) is an open-source, specialized security tool designed to create a memory dump of the Local Security Authority Subsystem Service (LSASS) process on Windows operating systems. It is primarily used during red team engagements and penetration tests to steal credentials, such as password hashes and Kerberos tickets, while avoiding detection by antivirus (AV) and Endpoint Detection and Response (EDR) solutions. 
 ## Key Functions and Capabilities
-* **LSASS Memory Dumping**: It extracts the memory of lsass.exe, where sensitive user credentials are stored, saving them into a `.dmp` file.
+* **LSASS Memory Dumping**: It extracts the memory of `lsass.exe`, where sensitive user credentials are stored, saving them into a `.dmp` file.
 * **AV/EDR Evasion**: Unlike standard tools (like [Sysinternals ProcDump](https://learn.microsoft.com/en-us/sysinternals/downloads/procdump) or Mimikatz), Dumpert avoids using common Windows API functions that are heavily monitored by security software.
 * **Direct System Calls [(Syscalls)](https://github.com/j00ru/windows-syscalls)**: It bypasses user-mode hooks by executing system calls directly to the kernel, making it difficult for security products to detect the activity.
 * **API Unhooking**: The tool unhooks API functions to further mask its activities.
 * **Fileless Operation (sRDI)**: It provides an sRDI (shellcode Reflective DLL Injection) version, allowing it to be injected directly into memory via [Cobalt Strike](https://github.com/cobalt-strike), thus avoiding writing files to the disk. 
 ## Usage Context
-* **Credential Theft**: Once the lsass.dmp file is created, it can be analyzed offline using tools like Mimikatz or [Pypykatz](https://github.com/skelsec/pypykatz) to extract plaintext passwords and hashes.
+* **Credential Theft**: Once the `lsass.dmp` file is created, it can be analyzed offline using tools like Mimikatz or [Pypykatz](https://github.com/skelsec/pypykatz) to extract plaintext passwords and hashes.
 * **Lateral Movement**: The stolen credentials enable attackers to move laterally across a network.
 * **Post-Exploitation**: It is used after gaining elevated privileges (`SYSTEM`) on a compromised system.
 * **Impacket (`secretsdump`)**: Impacket's `secretsdump.py` is a powerful, open-source Python script used to remotely or locally extract sensitive secrets—such as user password hashes and credentials—from Windows systems without installing an agent on the target machine. It is widely used by penetration testers for security auditing and by attackers for lateral movement and privilege escalation.
-#### Core Functionalities
+## Core Functionalities
 * **`secretsdump`**: Performs various techniques to dump secrets, including: 
 * **SAM and LSA Secrets Extraction**: It reads the Security Account Manager (SAM) and Local Security Authority (LSA) registry hives to obtain local user NTLM hashes, cleartext credentials, and cached domain credentials.
-* **NTDS.dit Extraction**: It extracts the Active Directory database (NTDS.dit) from Domain Controllers, allowing for the retrieval of NTLM hashes, Kerberos keys, and usernames for all domain users.
+* **`NTDS.dit` Extraction**: It extracts the Active Directory database (`NTDS.dit`) from Domain Controllers, allowing for the retrieval of NTLM hashes, Kerberos keys, and usernames for all domain users.
 * **DCSync Attack**: It utilizes the DRSR (Directory Replication Service Remote) protocol to mimic a Domain Controller and pull password hashes, a common method used to dump domain credentials without executing code on the DC.
-* **Offline Hive Parsing**: It can parse SAM, SECURITY, and SYSTEM registry hives that have already been dumped and saved locally.
+* **Offline Hive Parsing**: It can parse SAM, SECURITY, and `SYSTEM` registry hives that have already been dumped and saved locally.
 * **Volumen Shadow Copy (VSS)**: If files are locked, it uses Volume Shadow Copies to read locked database files. 
-#### Key Features for Attackers/Pentester
+## Key Features for Attackers/Pentester
 * **Agentless**: No agent or binary is dropped on the target machine, which helps evade detection.
 * **Multiple Authentication Methods**: Supports authentication via username/password, NTLM hashes (Pass-the-Hash), or Kerberos keys (Pass-the-Ticket).
 * **Service Manipulation**: If required, it can remotely enable the Remote Registry service to extract credentials and restore it to its original state afterward. 
-#### Typical Use Case
-An attacker with local administrator privileges on one machine can use secretsdump to connect to a domain controller or another machine, extract hashes, and then use those hashes to authenticate to other systems in the network (lateral movement).
+## Typical Use Case
+* An attacker with local administrator privileges on one machine can use `secretsdump.PY` to connect to a domain controller or another machine, extract hashes, and then use those hashes to authenticate to other systems in the network (lateral movement).
 * **BloodHound**: BloodHound is an open-source cybersecurity tool that uses graph theory to map and analyze relationships within Active Directory (AD) and Azure environments. It identifies hidden attack paths, privilege escalations, and misconfigurations, allowing red teams to move laterally and blue teams to remediate security risks. 
-#### Key Functions of BloodHound:
+### Key Functions of BloodHound:
 * **Attack Path Visualization**: It maps relationships between users, groups, computers, and permissions, visualizing complex AD environments.
 * **Privilege Escalation Mapping**: It finds the shortest, most efficient path from a compromised low-privilege user to high-privilege targets, such as Domain Admins.
 * **Data Collection (SharpHound/AzureHound)**: It uses ingestors (SharpHound for AD, AzureHound for Azure) to collect data on user sessions, group memberships, and ACLs.
 * **Defensive Analysis**: Defenders (blue teams) use it to identify and eliminate dangerous privilege relationships and misconfigurations.
 * **Attack Simulation**: Red teams use it to plan lateral movement and simulate ransomware-style attacks. 
-### Components
-* **Data Ingestors**: SharpHound.exe (C#) or PowerShell scripts gather network data.
+## Components
+* **Data Ingestors**: `sharphound.exe` (C#) or `powershell.exe` scripts gather network data.
 * **Graph Database**: Neo4j stores the relationships.
 * **Visualization GUI**: A web interface (Community Edition) or legacy app displays the graph, revealing attack paths. BloodHound is available as an open-source Community Edition and a managed enterprise version. 
 ---
-## Lateral Movement (TA0008)
-Lateral Movement (TA0008) in the MITRE ATT&CK® framework refers to the techniques cyber adversaries use to navigate through a network, moving from an initially compromised system to other hosts, to expand access, steal data, or deploy ransomware. It is a critical post-compromise stage, often involving stolen credentials and legitimate tools to evade detection. 
-### Key Aspects and Techniques
-Attackers use several methods to move laterally, often blending in with authorized user activity: 
-* **Remote Services (T1021)**: Utilizing valid credentials to log in remotely via RDP, SSH, or VPN.
-* **Lateral Tool Transfer (T1570)**: Moving tools or malware between systems to further the attack.
-* **Pass-the-Hash (T1550.002)**: Using stolen password hashes to authenticate, bypassing the need for a plaintext password.
-* **Exploitation of Remote Services (T1210)**: Exploiting vulnerabilities in network services to gain unauthorized access.
-* **Internal Spearphishing (T1534)**: Using a compromised internal account to send phishing emails to other employees within the same organization.
-* **Windows Admin Shares [(T1021.002)](https://attack.mitre.org/techniques/T1021/002/)**: Utilizing built-in network shares to copy files and move between systems. 
+## Lateral Movement [(TA0008)](https://attack.mitre.org/tactics/TA0008/)
+Lateral Movement in the MITRE ATT&CK® framework refers to the techniques cyber adversaries use to navigate through a network, moving from an initially compromised system to other hosts, to expand access, steal data, or deploy ransomware. It is a critical post-compromise stage, often involving stolen credentials and legitimate tools to evade detection. 
+## Key Aspects and Techniques
+* Attackers use several methods to move laterally, often blending in with authorized user activity: 
+  * **Remote Services [(T1021)](https://attack.mitre.org/techniques/T1021/)**: Utilizing valid credentials to log in remotely via RDP, SSH, or VPN.
+  * **Lateral Tool Transfer [(T1570)](https://attack.mitre.org/techniques/T1570/)**: Moving tools or malware between systems to further the attack.
+  * **Pass-the-Hash [(T1550.002)](https://attack.mitre.org/techniques/T1550/002/)**: Using stolen password hashes to authenticate, bypassing the need for a plaintext password.
+  * **Exploitation of Remote Services [(T1210)](https://attack.mitre.org/techniques/T1210/)**: Exploiting vulnerabilities in network services to gain unauthorized access.
+  * **Internal Spearphishing [(T1534)](https://attack.mitre.org/techniques/T1534/)**: Using a compromised internal account to send phishing emails to other employees within the same organization.
+  * **Windows Admin Shares [(T1021.002)](https://attack.mitre.org/techniques/T1021/002/)**: Utilizing built-in network shares to copy files and move between systems. 
 ## Common Usage Examples
 * **RDP/VPN Hijacking**: An attacker uses stolen VPN credentials to log into a workstation, then uses RDP to move to a sensitive server.
 * **Using Admin Tools**: Utilizing Windows Management Instrumentation (WMI) or PowerShell Remoting (PSR) to execute code on remote machines.
 * **Cloud Lateral Movement**: Accessing shared cloud resources by stealing API keys or leveraging misconfigured IAM roles to jump between cloud tenants. 
-### Important Note About Lateral Movement
+### ℹ️ Important Note About Lateral Movement
 * This tactic is essential for threat actors to achieve their final objectives, such as stealing intellectual property, escalating privileges, or gaining persistence across an entire network. It is heavily used in approximately 60% of attacks, including ransomware campaigns. 
 * **Remote Services [(T1021)](https://attack.mitre.org/techniques/T1021/)**: Remote Services involve threat actors using legitimate credentials to move laterally within a network by abusing built-in administrative tools like RDP, SMB/Admin Shares, and WMI. By blending into normal administrative activity (Living Off The Land), attackers can steal data, install malware, or pivot to new targets. 
 ## Key Aspects of Remote Services Lateral Movement
@@ -126,8 +126,8 @@ Attackers use several methods to move laterally, often blending in with authoriz
 * **Monitor Activity**: Look for unusual logon activity, such as, for example, user accounts accessing multiple systems in a short time, or RDP/SMB activity outside of normal working hours.
 * **Restrict Access**: Use Windows Firewall to restrict SMB access, disable administrative shares if not needed, and restrict local administrator accounts to specific workstations.
 * **Credential Management**: Enforce strong, unique passwords for local admin accounts to prevent pass-the-hash attacks.
+* * **Pass-the-Hash (PtH) / Pass-the-Ticket (PtT)**: Utilizing stolen hashes or Kerberos tickets to impersonate users.
 * **TL;DR**: Using valid accounts to move laterally via SMB/Windows Admin Shares, Remote Desktop Protocol (RDP), or Windows Management Instrumentation (WMI).
-* **Pass-the-Hash (PtH) / Pass-the-Ticket (PtT)**: Utilizing stolen hashes or Kerberos tickets to impersonate users.
 ### Tool
 `PsExec`
 ### Tool Description
@@ -139,18 +139,18 @@ Attackers use several methods to move laterally, often blending in with authoriz
 * **File Transfer**: Can copy binaries to remote computers and execute them via `ADMIN$` share. 
 ## How It Works:
 * `PsExec` connects to a target machine's `ADMIN$` share via SMB (TCP port 445), copies a temporary service executable (`PSEXESVC.exe`) to it, and uses that service to launch the requested command or process.
-* **Important Considerations**
-* **Security**: Due to its ability to remotely launch processes, it is commonly used by attackers for lateral movement, privilege escalation, and deploying malware during ransomware campaigns.
+* **ℹ️ Important Considerations**
+  * **Security**: Due to its ability to remotely launch processes, it is commonly used by attackers for lateral movement, privilege escalation, and deploying malware during ransomware campaigns.
 * **Requirements**: Requires administrative credentials on the target machine, and the remote machine must have file and printer sharing enabled.
-* **Alternatives**: While popular, administrators may use more robust tools like PowerShell Remoting for large-scale deployments.
+* **Alternatives**: While popular, administrators may use more robust tools like PowerShell Remoting (PSR) for large-scale deployments.
 ### Tool
 WMIExec
 ### Tool Description
-* WmIexec is a versatile Impacket tool used to execute commands and gain a semi-interactive shell on remote Windows systems. It leverages WMI and DCOM (TCP 135) for lateral movement and command execution without creating new services, making it stealthier than similar tools like `smbexec`.
+* WmIexec is a versatile Impacket Suite tool used to execute commands and gain a semi-interactive shell on remote Windows systems. It leverages WMI and DCOM (TCP 135) for lateral movement and command execution without creating new services, making it stealthier than similar tools like `smbexec`.
 ## Key Features and Behaviors
 * **Remote Command Execution**: Uses WMI (`Win32_Process` class) to execute commands (`cmd.exe /c`) remotely, often resulting in processes with `wmiprvse.exe` as the parent.
-* **Output Redirection**: It saves command output to a file via SMB (usually in ADMIN$) and deletes it afterward, which allows for viewing results of commands.
-* **Stealthy Operations**: It does not require installing a service on the target machine, which makes it harder to detect, note.
+* **Output Redirection**: It saves command output to a file via SMB (usually in `ADMIN$`) and deletes it afterward, which allows for viewing results of commands.
+* **Stealthy Operations**: It does not require installing a service on the target machine, which makes it harder to detect.
 * **Requirements**: Requires valid credentials (username and password or NTLM hash) of an account with local administrator privileges.
 * **Usage**: It is often used by red teams and threat actors to run commands, run PowerShell, or spawn reverse shells. 
 It is widely known as a powerful tool in the Impacket library, an open-source toolset that is used to work with network protocols.
@@ -169,40 +169,39 @@ RDP (Remote Desktop Protocol)
 * **Multi-Platform Support**: While native to Windows, RDP clients exist for macOS, Linux, iOS, and Android.
 * **Bandwidth Efficiency**: It is designed to run efficiently over networks, reducing the need to retransmit screen data. 
 RDP is widely used in corporate environments for IT management, supporting remote work, and accessing cloud-based servers, although it requires secure configuration to avoid security risks.
-* BloodHound/SharpHound for path analysis
 
-## Persistence (TA0003)
+## Persistence [(TA0003)](https://attack.mitre.org/techniques/TA0003/)
 Persistence is a core tactic within the MITRE ATT&CK® framework, representing techniques that adversaries use to maintain access to a target system, even after disruptions such as consistent reboots, credential changes, or network interruptions. The ultimate goal of this tactic is to ensure long-term, continued presence on a compromised host to facilitate further malicious activity, such as data theft, espionage, or lateral movement. With over 20 distinct techniques categorized under it, persistence is crucial for threat actors because it allows them to retain a foothold even if their initial entry method is discovered and blocked.
-# Persistence Attack Techniques and Tools
-## 1. Account Manipulation (T1098)
-### Attack Technique Details
-Account Manipulation (T1098) is a MITRE ATT&CK® technique where adversaries modify existing, legitimate user or administrator accounts to maintain persistent access, escalate privileges, or evade detection. Unlike creating new accounts (T1136), which often triggers security alerts, manipulating existing accounts allows attackers to hide in plain sight using valid credentials.
-### 1. Modifying Privileged Groups (T1098.007) 
+## Persistence Attack Techniques and Tools
+### 1. Account Manipulation [(T1098)](https://attack.mitre.org/techniques/T1098/)
+* Account Manipulation is a MITRE ATT&CK® technique where adversaries modify existing, legitimate user or administrator accounts to maintain persistent access, escalate privileges, or evade detection. Unlike creating new accounts (T1136), which often triggers security alerts, manipulating existing accounts allows attackers to hide in plain sight using valid credentials.
+### 2. Modifying Privileged Groups [(T1098.007)](https://attack.mitre.org/techniques/T1098/007/) 
 * Attackers modify group memberships to elevate privileges from a standard user to an administrator or to gain access to sensitive resources.
-* **Windows**: Attackers use commands like `net localgroup "Administrators" [username] /add` or `net group "Domain Admins" [username] /add` to promote a compromised account.
-* **Linux**: Adversaries may add a user to the `sudo` or wheel groups using `usermod -aG sudo [username]` to obtain root-level privileges.
-* **Active Directory/Cloud**: Adding a user to the Domain Admins group or assigning high-level RBAC roles (e.g., Global Administrator in Office 365) ensures persistent, high-level access.
-### 2. Adding Keys to authorized_keys (T1098.004)
-* On Linux/macOS systems, attackers add their own SSH public keys to the .ssh/authorized_keys file of a user, allowing them to log in via SSH without a password. 
-* **Mechanism**: An attacker who gains shell access will append their public key to /home/[username]/.ssh/authorized_keys.
+* **Windows Persistenc**: Attackers use commands like `net localgroup "Administrators" [username] /add` or `net group "Domain Admins" [username] /add` to promote a compromised account.
+* **Linux Persistence**: Adversaries may add a user to the `sudo` or wheel groups using `usermod -aG sudo [username]` to obtain root-level privileges.
+* **Active Directory/Cloud Persistence**: Adding a user to the Domain Admins group or assigning high-level RBAC roles (e.g., Global Administrator in Office 365) ensures persistent, high-level access.
+### 2. Adding Keys to `authorized_keys` [(T1098.004)](https://attack.mitre.org/techniques/T1098/004/)
+* On Linux/macOS systems, attackers add their own SSH public keys to the `.ssh/authorized_keys` file of a user, allowing them to log in via SSH without a password. 
+* **Mechanism**: An attacker who gains shell access will append their public key to `/home/[username]/.ssh/authorized_keys`.
 * **Persistence**: Even if the attacker's original malicious process is killed, they can re-enter the system at any time using the corresponding private key, bypassing password-based security.
 * **Cloud Persistence**: In cloud environments, this can be done via CLI or API to modify SSH keys on virtual machine instances. 
-### 3. Manipulating User Attributes (T1098)
+### 3. Manipulating User Attributes [(T1098)](https://attack.mitre.org/techniques/T1098/)
 * Adversaries tweak specific account attributes to bypass security policies or maintain access. 
 * **Password Policies**: Attackers may change passwords repeatedly to ensure the compromised account does not expire, or set a known password while bypassing password history requirements.
 * **Service Principal Names (SPN)**: Manipulating SPNs can facilitate Kerberoasting, a technique to crack service account passwords.
-* **MFA/Device Registration (T1098.005)**: Attackers may register a new device to a user account via Azure Entra ID or Duo self-enrollment portals to bypass Multi-Factor Authentication (MFA).
+### 4. MFA/Device Registration [(T1098.005)](https://attack.mitre.org/techniques/T1098/005/)
+* Attackers may register a new device to a user account via Azure Entra ID or Duo self-enrollment portals to bypass Multi-Factor Authentication (MFA).
 * **Logon Hours**: Modifying allowed logon hours to allow access 24/7. 
-### 4. Cloud-Specific Manipulation (T1098.003)
-* **Additional Cloud Roles**: In AWS, an adversary may use AttachUserPolicy to attach an IAM policy with excessive permissions to a compromised account.
+### 5. Cloud-Specific Manipulation [(T1098.003)](https://attack.mitre.org/techniques/T1098/003/)
+* **Additional Cloud Roles**: In AWS, an adversary may use `AttachUserPolicy` to attach an IAM policy with excessive permissions to a compromised account.
 * **OAuth Application Abuse**: Creating or modifying OAuth applications to gain long-term API access to user data (e.g., mailboxes) without needing user credentials. 
 ## Detection and Mitigation
 * **Monitor Group Membership Changes**: Alert on unauthorized changes to sensitive groups like Domain Admins, Enterprise Admins, or `sudoers`.
-* **Audit `.ssh/authorized_keys`**: Use File Integrity Monitoring (FIM) to detect modifications to authorized_keys files.
+* **Audit `.ssh/authorized_keys`**: Use File Integrity Monitoring (FIM) to detect modifications to `authorized_keys` files.
 * **MFA Registration Monitoring**: Alert when new devices are registered for MFA, especially from anomalous locations.
 * **Audit Logging**: Enable detailed auditing for user account management, password resets, and login activity.
 * **TL;DR**: Modifying privileged groups, adding keys to `authorized_keys`, or manipulating user attributes.
-### Tool Used
+### Tool
 * Mimikatz
 * **Use for**: Password Dumping and Credential Manipulation
 ### Password Dumping and Credential Manipulation Attack Technique Demonstration Using Mimikatz
