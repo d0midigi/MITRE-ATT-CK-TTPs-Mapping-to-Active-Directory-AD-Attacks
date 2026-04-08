@@ -651,7 +651,7 @@ Group Policy Object (GPO) Abuse leverages unauthorized write access to a GPO to 
 ## Red Team Execution: Path to Domain Admin
 
 ### 1. Initial Access & Credential Capture
-#### TTPs:
+### Tactics, Technique and Procedures (TTPs):
 * LLMNR/NBT-NS Poisoning (T1557.001)
 * Spearphishing (T1566.001)
 #### Primary Tools:
@@ -664,7 +664,7 @@ Group Policy Object (GPO) Abuse leverages unauthorized write access to a GPO to 
 * **Socket Selection**: Use `Inveigh` to avoid opening new high-risk ports that EDR monitors.
 
 ### 2. Reconnaissance
-#### TTPs:
+### Tactics, Technique and Procedures (TTPs):
 * Domain Trust / Object Discovery (T1482)
 #### Primary Tools:
 * **BloodHound / SharpHound**: Maps the "Six Degrees of Domain Admin."
@@ -676,7 +676,7 @@ Group Policy Object (GPO) Abuse leverages unauthorized write access to a GPO to 
 * **DON'T USE `.exe`**: Run SharpHound via In-Memory Reflection using `execute-assembly` in your C2 (Cobalt Strike, or Havoc).
 
 ### 3. Privilege Escalation
-#### TTPs:
+### Tactics, Technique and Procedures (TTPs):
 * Kerberoasting (T1558.003)
 * AD CS ESC1 (T1649)
 ### Primary Tools:
@@ -689,7 +689,7 @@ Group Policy Object (GPO) Abuse leverages unauthorized write access to a GPO to 
 * **OPSEC-Safe AD CS**: Use `Certify` to find templates but avoid the `/enforce` flag unless absolutely necessary to prevent accidental lockouts or alerts from triggering.
 
 ### 4. Lateral Movement
-#### TTPs:
+### Tactics, Technique and Procedures (TTPs):
 * Overpass-the-Hash / Pass-the-Ticket (PtT)
 ### Primary Tools:
 * **Mimikatz**: The classic tool for credential extraction and injection.
@@ -701,7 +701,7 @@ Group Policy Object (GPO) Abuse leverages unauthorized write access to a GPO to 
 * **SOCKS Proxying**: Use `Chisel` or `Ligolo-ng` to tunnel Impacket traffic through your C2 agent to appear as inconspicuous local network traffic.
 
 ### 5. Persistence
-#### TTPs:
+### Tactics, Technique and Procedures (TTPs):
 * Golden Ticket (T1558.001)
 * GPO Modification (T1484.001)
 #### Primary Tools:
@@ -725,7 +725,7 @@ Group Policy Object (GPO) Abuse leverages unauthorized write access to a GPO to 
 
 ### 6. Coerced Authentication & NTLM Relaying
 These techniques allow an individual to move laterally and escalate privileges without ever needing to crack a password or find a plaintext credential.
-### TTPs:
+### Tactics, Technique and Procedures (TTPs):
 * **Adversary-in-the-Middle (AitM) (T1557.001)**: Adversary-in-the-Middle (AitM) is a specific cybersecurity sub-technique within the MITRE ATT&CK® framework where an attacker poisons themselves between a user and a legitimate network resource to intercept and manipulates authentication traffic. By exploiting weak network protocols (LLMNR, NBT-NS, mDNS), attackers are able to trick systems into sending authentication hashes to the attacker-controlled machine, which are then relayed to other services to gain unauthorized access.
 * **Exploitation of Remote Services (T1210)**: This involves forcing a high-privileged machine (like a Domain Controller) to authenticate to you, then "relaying" that session to a target (like AD CS or a sensitive, mission-critical server).
 ### Primary Tools:
@@ -737,7 +737,7 @@ These techniques allow an individual to move laterally and escalate privileges w
 * **Multi-Relay**: Use `--multi-relay` in `ntlmrelayx` to maintain a persistent relay session across multiple targets simultaneously.
 
 ### 7. Shadow Credentials (Whiteshadow)
-### TTPs:
+### ### Tactics, Technique and Procedures (TTPs):
 * **Account Manipulation (T1098)**: If you have "`GenericWrite`" or "`WriteProperty`" over a user or computer object, you can add a public key to their `msDS-KeyCredentialLink` attribute and then authenticate as them via PKINIT.
 ### Primary Tools:
 * **Whisker / `pyWhisker`**: Specifically designed to manipulate the `msDS-KeyCredentialLink` attribute.
@@ -747,19 +747,20 @@ These techniques allow an individual to move laterally and escalate privileges w
 * **Targeting "Dead" Accounts**: Apply shadow credentials to accounts that are rarely used but have high permissions to avoid triggering "active session" alerts.
 
 ### 8. Local Privilege Escalation (LPE) to Domain Access
-### TTPs:
+### ### Tactics, Technique and Procedures (TTPs):
 * **Access Token Manipulation (T1134)**: Access Token Manipulation (T1134) is a MITRE ATT&CK® technique used by adversaries to gain unauthorized access to systems, escalate privileges, and evade security controls by manipulating the Windows security tokens that are associated with processes and threads. This technique primarily targets Windows environments, allowing an attacker to change the security context of a running process to appear as if it is running as a different user (e.g., Administrator or `NT AUTHORITY\SYSTEM`).
 * **Boot or Logon Autostart Execution (T1547)**: Boot or Logon AutoStart Execution (T1547) is a MITRE ATT&CK® technique where attackers configure malicious programs to run automatically when a system boots or a user logs in. By abusing system startup mechanisms like registry keys, startup folders, or `systemd`, they achieve persistence, privilege escalation, and stealth.
 ### Primary Tools:
-* **SharpUp / Seatbelt**: Audits for local misconfigurations (unquoted service paths, modifiable binaries).
-* **GodPotato / PetitPotato**: Modern "Potato" exploits to escalate from Service Accounts to `SYSTEM`.
+* **[SharpUp](https://github.com/ghostpack/sharpup) / [Seatbelt](https://github.com/GhostPack/Seatbelt)**: Audits for local misconfigurations (unquoted service paths, modifiable binaries).
+* **[GodPotato](https://github.com/BeichenDream/GodPotato) / [PetitPotato](https://github.com/wh0amitz/PetitPotato)**: Modern "Potato" exploits to escalate from Service Accounts to `SYSTEM`.
 * **Mimikatz (`sekurlsa::tickets`)**: To "harvest" tickets of users currently or previously logged into the machine.
 ### Evasive Techniques:
 * **Process Injection**: Instead of running an exploit as a new process, inject your LPE code into a trusted process like `svchost.exe` or `spoolsv.exe`.
-* **Token Impersonation**: Use `incognito` (via Metasploit/Cobalt Strike) to steal tokens from memory without dumping LSASS, which is a massive EDR trigger.
+* **Token Impersonation**: Use `incognito` (via [Metasploit](https://github.com/rapid7/metasploit-framework)/Cobalt Strike) to steal tokens from memory without dumping LSASS, which is a massive EDR trigger.
 
 ### 9. The "Golden GMSA" Attack
-### TTPs: Steal or Forge Kerberos Tickets (T1558)
+### ### Tactics, Technique and Procedures (TTPs):
+* Steal or Forge Kerberos Tickets (T1558)
 * Group Managed Service Accounts (gMSAs) are often used for high-privilege services. If you can read the `msDS-ManagedPassword` attribute, you own the service.
 ### Primary Tools:
 * **`GMSAPasswordReader`**: Specifically for extracting gMSA passwords.
