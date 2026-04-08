@@ -50,15 +50,15 @@ The mapping includes:
 <!-- * [License](#license) -->
 For brevity and clarity. the term "individual" will be used to represent both attacker and defender - depending on context.
 
-## Credential Access [(TA0006)](https://attack.mitre.org/tactics/TA0006/)
+# Credential Access [(TA0006)](https://attack.mitre.org/tactics/TA0006/)
 * **OS Credential Dumping** [(T1003)](https://attack.mitre.org/techniques/T1003/003/): OS Credential Dumping is a, if not the, primary method individuals use to transition from initial system access to full network compromise. By stealing password hashes or plaintext credentials stored in operating system memory or databases, individuals can escalate privileges and move laterally across an environment. This technique is frequently used by ransomware gangs and APT groups.<br>
 **🔸TL;DR**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.🔸
 * **Steal or Forge Authentication Certificates [(T1649)](https://attack.mitre.org/techniques/T1649/)**: Steal or Forge Authentication Certificates is a critical MITRE ATT&CK® technique focusing on abusing Active Directory Certificate Services (AD CS) to gain unauthorized access. Because AD CS enables certificate-based authentication (using certificates instead of passwords), compromising the certificate infrastructure allows individuals to bypass traditional password-based security controls, establish long-term persistence, and escalate privileges to the highest levels (e.g., Domain Admin).<br> 
 **🔸TL;DR**: Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.🔸
-# Tool
+# Credential Access Tools
 ## Mimikatz
 * Mimikatz is a powerful open-source post-exploitation tool designed to extract plain-text passwords, hashes, PINs, and Kerberos tickets directly from Windows memory (LSASS process). It is primarily used by individuals to escalate privileges, move laterally through networks, and create persistent access through techniques like pass-the-hash and Golden Ticket attacks.
-## Key Capabilities and Functions
+### Key Capabilities and Functions of Mimikatz
 * **Credential Dumping (`sekurlsa`)**: Extracts credentials from memory, including user passwords in plain text, NTLM hashes, and Kerberos tickets.
 * **Pass-the-Hash (PtH)**: Uses stolen NTLM hashes to authenticate as a user without needing the original password.
 * **Pass-the-Ticket/Golden Ticket**: Generates forged Kerberos tickets to gain unauthorized domain access and impersonate any user, often indefinitely.
@@ -66,38 +66,208 @@ For brevity and clarity. the term "individual" will be used to represent both at
 * **Certificate Export**: Exports certificates and private keys from the Windows Certificate Store, even if marked as non-exportable.
 * **Fileless Execution**: Often executed in memory via PowerShell or similar methods to avoid detection on disk.
 * **Dumpert**: [Dumpert](https://github.com/outflanknl/dumpert) is an open-source, specialized security tool designed to create a memory dump of the Local Security Authority Subsystem Service (LSASS) process on Windows operating systems. It is primarily used during red team engagements and penetration tests to steal credentials, such as password hashes and Kerberos tickets, while avoiding detection by antivirus (AV) and Endpoint Detection and Response (EDR) solutions. 
-## Key Functions and Capabilities
+### Mimikatz Key Functions and Capabilities
 * **LSASS Memory Dumping**: It extracts the memory of `lsass.exe`, where sensitive user credentials are stored, saving them into a `.dmp` file.
 * **AV/EDR Evasion**: Unlike standard tools (like [Sysinternals ProcDump](https://learn.microsoft.com/en-us/sysinternals/downloads/procdump) or Mimikatz), Dumpert avoids using common Windows API functions that are heavily monitored by security software.
 * **Direct System Calls [(Syscalls)](https://github.com/j00ru/windows-syscalls)**: It bypasses user-mode hooks by executing system calls directly to the kernel, making it difficult for security products to detect the activity.
 * **API Unhooking**: The tool unhooks API functions to further mask its activities.
 * **Fileless Operation (sRDI)**: It provides an sRDI (shellcode Reflective DLL Injection) version, allowing it to be injected directly into memory via [Cobalt Strike](https://github.com/cobalt-strike), thus avoiding writing files to the disk. 
-## Usage Context
-* **Credential Theft**: Once the `lsass.dmp` file is created, it can be analyzed offline using tools like Mimikatz or [Pypykatz](https://github.com/skelsec/pypykatz) to extract plaintext passwords and hashes.
+### Mimikatz Usage Context
+* **Credential Theft**: Once the `lsass.dmp` file is created, it can be analyzed offline not only by using Mimikatz, but other credential access tool variants will work such as [Pypykatz](https://github.com/skelsec/pypykatz) to extract plaintext passwords and hashes.
 * **Lateral Movement**: The stolen credentials enable individuals to move laterally across a network.
-* **Post-Exploitation**: It is used after gaining elevated privileges (`SYSTEM`) on a compromised system.
-* **Impacket (`secretsdump`)**: Impacket's `secretsdump.py` is a powerful, open-source Python script used to remotely or locally extract sensitive secrets—such as user password hashes and credentials—from Windows systems without installing an agent on the target machine. It is widely used by penetration testers for security auditing and by individuals for lateral movement and privilege escalation.
-## Core Functionalities
-* **`secretsdump`**: Performs various techniques to dump secrets, including: 
-* **SAM and LSA Secrets Extraction**: It reads the Security Account Manager (SAM) and Local Security Authority (LSA) registry hives to obtain local user NTLM hashes, cleartext credentials, and cached domain credentials.
-* **`NTDS.dit` Extraction**: It extracts the Active Directory database (`NTDS.dit`) from Domain Controllers, allowing for the retrieval of NTLM hashes, Kerberos keys, and usernames for all domain users.
-* **DCSync Attack**: It utilizes the DRSR (Directory Replication Service Remote) protocol to mimic a Domain Controller and pull password hashes, a common method used to dump domain credentials without executing code on the DC.
-* **Offline Hive Parsing**: It can parse SAM, SECURITY, and `SYSTEM` registry hives that have already been dumped and saved locally.
-* **Volumen Shadow Copy (VSS)**: If files are locked, it uses Volume Shadow Copies to read locked database files. 
-## Key Features for Attackers/Pentester
+# Post-Exploitation
+Post-exploitation in Active Directory (AD) refers to the pre-attack phase where an individual has already gained an initial foothold (e.g., a standard user's credentials or a compromised workstation) and is now working to expand their influence, elevate privileges, and achieve their ultimate objective within the domain. In a flat network, post-exploitation is the bridge between "landing" and pwning the entire enterprise.
+## Primary Goals of Post-Exploitation
+### Privilege Escalation
+* Moving from a standard user to a high-privileged account (Domain Admin, Enterprise Admin).
+### Lateral Movement
+* Jumping from the initial compromised machine to other servers or workstations to find more sensitive treasure troves of data.
+### Persistence
+* Ensuring the individual can get back into the network even if the initial entry point is closed, blocked, or a user changes their password.
+### Data Exfiltration
+* Locating and stealing intellectual property, financial records, or PII (Personally Identifiable Information).
+### Domain Dominance
+* Achieving a state where the individual "is" the network (e.g., controlling the Domain Controllers).
+## Common Post-Exploitation Techniques
+### 1. Enumeration (Mapping the Terrain)
+* The individual needs to understand the AD structure to identify targets precisely.
+	* **BloodHound/SharpHound**: Mapping hidden permission relationships and attack paths to Domain Admin.
+	* **PowerView**: Searching for "high-value" targets, such as machines with Domain Admins logged in.
+	* **AD Explorer**: Viewing the entire AD database to find descriptions or attributes containing passwords.
+## 2. Credential Harvesting (The "Keys to the Kingdom")
+Once on a machine, individuals look for stored secrets.
+	* **LSASS Dumping**: Using tools like Mimikatz to extract plaintext passwords or NTLM hashes from memory.
+	* **SAM Database**: Extracting local administrator passwords from the registry.
+	* **DCSync (T1003.006)**: Impersonating a Domain Controller to request password hashes for any user (including the `krbtgt` account).
+## 3. Lateral Movement (Navigating the Domain)
+Moving through the network using legitimate administrative tools.
+	* **Pass-the-Hash (PtH)**: Using an NTLM hash to authenticate without knowing the plaintext password of the breached account.
+	* **Pass-the-Ticket (PtT)**: Using a stolen Kerberos service ticket (TGT) to access resources.
+	* **Remote Execution**: Using `PsExec`, WMI, or WinRM (Windows Remote Management) to run commands on remote servers.
+## 4. Persistence (Staying Put for a While)
+Ensuring long-term access that survives reboots and password resets.
+	* **Golden Tickets**: Forging a Kerberos Ticket Grating Ticket (TGT) that can grant access to resource for years.
+	* **Silver Tickets**: Forging a service ticket for a specific service (like CIFS or LDAP).
+	* **Skeleton Key**: Injecting a "master password" into the in Controller's memory that works for every user.
+
+## Post-Exploitation Stages
+**Stage**: Discovery
+**Action**: Find where the Domain Admins are logged in.
+**Tool Example**: `Invoke-UserHunter`
+**Stage**: Credential Access
+**Action**: Pull hashes from the local memory.
+**Tool Example**: `Mimikatz`
+**Stage**: Lateral Movement
+**Action**: Remote into a file server using a stolen hash.
+**Tool Example**: `CrackMapExec`
+**Stage**: Dominance
+**Action**: Reset the `krbtgt` password and create a Golden Ticket.
+**Tool Example**: `Rubeus`
+## How to Stop Post-Exploitation
+* **Tiered Administrative Model**: Ensuring Domain Admins never log into standard workstations where their credentials can be stolen.
+* **LAPS (Local Administrator Password Solution)**: Giving every machine a unique, random local admin password.
+* **Endpoint Detection & Response (EDR)**: Monitoring for suspicious activities like LSASS memory dumping or unauthorized WMI calls.
+* **Privileged Access Management (PAM)**: Using "Just-In-Time" administration to reduce the window of opportunity for individuals.
+## Tools Used
+### Impacket (`secretsdump`)
+* Impacket's `secretsdump.py` is a powerful, open-source Python script used to remotely or locally extract sensitive secrets—such as user password hashes and credentials—from Windows systems without installing an agent on the target machine. It is widely used by penetration testers for security auditing and by individuals for lateral movement and privilege escalation.
+## Core Functionalities of `secretsdump.py`
+
+
+Here's a **secretsdump.py** code demonstration for the techniques you listed, including **SAM/LSA secrets**, **NTDS.dit extraction**, **DCSync**, **offline hive parsing**, and **Volume Shadow Copy (VSS)**. This script is part of the **Impacket** toolkit and is commonly used in **TA0004 (Privilege Escalation)** for credential dumping and domain analysis.
+
+---
+
+### **1. SAM and LSA Secrets Extraction**
+This technique extracts **NTLM hashes, cleartext passwords, and cached domain credentials** from a local machine (e.g., a domain controller or a compromised host).
+
+```bash
+# Example: Extract SAM and LSA secrets from a target machine (requires local admin rights)
+secretsdump.py -u Administrator -p "<password>" -ntlm <target_ip>
+```
+
+**Output**:
+- NTLM hashes for all local users.
+- Cleartext passwords if available (e.g., if the user has a weak password).
+- Domain credentials cached in memory (e.g., for domain users).
+
+**Notes**:
+- If the target is a domain controller, this can reveal **domain-level secrets** (e.g., **Kerberos keys**, **NTDS.dit**).
+- Replace `<password>` with the local admin password if known, or omit it if using pass-the-hash.
+
+---
+
+### **2. NTDS.dit Extraction (Domain Controller)**
+This technique pulls the **Active Directory database** (`NTDS.dit`) from a domain controller, allowing for **offline analysis** of domain user credentials.
+
+```bash
+# Example: Extract NTDS.dit from a domain controller (requires access to the DC)
+secretsdump.py -justdcs <dc_ip> -user-only
+```
+
+**Output**:
+- All domain user **NTLM hashes** and **usernames**.
+- Kerberos keys and other domain secrets.
+
+**Notes**:
+- `-justdcs` forces the script to connect to the DC and extract the **NTDS.dit** file.
+- `-user-only` filters output to just domain users (optional).
+- This is often used in conjunction with **offline hive parsing** for deeper analysis.
+
+---
+
+### **3. DCSync Attack**
+This technique **mimics a Domain Controller** via the **DRSR protocol** to pull password hashes and other secrets **without executing code on the DC**.
+
+```bash
+# Example: Perform a DCSync attack (requires domain user credentials)
+secretsdump.py -smb-server <dc_ip> -dc-ip <dc_ip> -username <domain_user> -password "<domain_user_password>" -domain <domain_name>
+```
+
+**Output**:
+- **NTLM hashes** for domain users.
+- **Kerberos tickets** and **other secrets**.
+
+**Notes**:
+- DCSync is a **zero-click** method to extract credentials, making it ideal for **remote privilege escalation**.
+- If the attacker has **domain admin** rights, they can use this to **dump all domain credentials**.
+
+---
+
+### **4. Offline Hive Parsing**
+This technique parses **previously dumped SAM, SECURITY, or SYSTEM hives** to extract user credentials and other sensitive data.
+
+```bash
+# Example: Parse a SAM hive file (requires the hive file to be dumped locally)
+secretsdump.py -hives sam.hive -outputfile output.txt
+```
+
+**Output**:
+- Detailed analysis of the SAM hive, including:
+  - User **cleartext passwords**.
+  - **NTLM hashes**.
+  - **User attributes** (e.g., enabled/disabled status, last logon time).
+
+**Notes**:
+- Use this after extracting hives via **VSS** or other methods.
+- Combine with `hive_dump.py` for more granular analysis (e.g., extracting password hashes from the SYSTEM hive).
+
+---
+
+### **5. Volume Shadow Copy (VSS) for Locked Files**
+This technique uses **Volume Shadow Copy** to read **locked files** (e.g., `NTDS.dit`) on a domain controller when they are inaccessible via normal methods.
+
+```bash
+# Example: Use VSS to extract NTDS.dit from a locked domain controller
+secretsdump.py -use-vss -dc-ip <dc_ip> -username <domain_user> -password "<domain_user_password>" -domain <domain_name>
+```
+
+**Output**:
+- `NTDS.dit` file even if the target is locked or not responding.
+**Notes**:
+- `-use-vss` enables VSS for reading locked files.
+- This is useful when the domain controller is not accessible via normal SMB connections.
+---
+
+### **Combined Example: Full Privilege Escalation Workflow**
+Here’s a real-world scenario combining all techniques:
+```
+# Step 1: DCSync to get NTLM hashes (no code execution on DC)
+secretsdump.py -smb-server <dc_ip> -dc-ip <dc_ip> -username <domain_user> -password "<domain_user_password>" -domain <domain_name>
+
+# Step 2: Use VSS to extract NTDS.dit from a locked DC
+secretsdump.py -use-vss -dc-ip <dc_ip> -username <domain_user> -password "<domain_user_password>" -domain <domain_name>
+
+# Step 3: Parse the extracted NTDS.dit file (offline analysis)
+secretsdump.py -hives ntds.dit -outputfile ntds_output.txt
+```
+
+---
+### How This Fits into TA0004 (Privilege Escalation)
+**1. SAM/LSA Secrets Extraction**: Reveals local user credentials and domain secrets for lateral movement or credential reuse.
+**2. `NTDS.dit` Extraction**: Provides domain-wide credentials for full domain compromise (e.g., using Pass-the-Hash or Kerberos ticket manipulation).
+**3. DCSync**: Enables remote privilege escalation by mimicking the DC to pull secrets without needing local admin rights.
+**4. Offline Hive Parsing**: Allows deep analysis of user credentials and system configuration (e.g., finding users with `PasswordNeverExpires`).
+**5. VSS**: Overcomes file lock issues on DCs, ensuring access to critical secrets even when the DC is busy or locked.
+### **Notes on Usage**
+- **Prerequisites**: You need to have access to a **domain user account** (e.g., via Pass-the-Hash or NTLM relay).
+- **Execution**: Run the script from a **compromised host** or **directly on the DC** (if you have local admin rights).
+- **Tools**: Combine with **BloodHound** for graph-based analysis or **PowerView** for AD enumeration. 
+## Key Features of `secretsdump.py`
 * **Agentless**: No agent or binary is dropped on the target machine, which helps evade detection.
 * **Multiple Authentication Methods**: Supports authentication via username/password, NTLM hashes (Pass-the-Hash), or Kerberos keys (Pass-the-Ticket).
 * **Service Manipulation**: If required, it can remotely enable the Remote Registry service to extract credentials and restore it to its original state afterward. 
 ## Typical Use Case
 * An individual with local administrator privileges on one machine can use `secretsdump.PY` to connect to a domain controller or another machine, extract hashes, and then use those hashes to authenticate to other systems in the network (lateral movement).
-* **BloodHound**: BloodHound is an open-source cybersecurity tool that uses graph theory to map and analyze relationships within Active Directory (AD) and Azure environments. It identifies hidden attack paths, privilege escalations, and misconfigurations, allowing red teams to move laterally and blue teams to remediate security risks. 
-### Key Functions of BloodHound:
+## BloodHound
+* BloodHound is an open-source cybersecurity tool that uses graph theory to map and analyze relationships within Active Directory (AD) and Azure environments. It identifies hidden attack paths, privilege escalations, and misconfigurations, allowing red teams to move laterally and blue teams to remediate security risks. 
+## Key Functions of BloodHound
 * **Attack Path Visualization**: It maps relationships between users, groups, computers, and permissions, visualizing complex AD environments.
 * **Privilege Escalation Mapping**: It finds the shortest, most efficient path from a compromised low-privilege user to high-privilege targets, such as Domain Admins.
 * **Data Collection (SharpHound/AzureHound)**: It uses ingestors (SharpHound for AD, AzureHound for Azure) to collect data on user sessions, group memberships, and ACLs.
 * **Defensive Analysis**: Defenders (blue teams) use it to identify and eliminate dangerous privilege relationships and misconfigurations.
 * **Attack Simulation**: Red teams use it to plan lateral movement and simulate ransomware-style attacks. 
-## Components
+## Components of `secretsdump.py`
 * **Data Ingestors**: `sharphound.exe` (C#) or `powershell.exe` scripts gather network data.
 * **Graph Database**: Neo4j stores the relationships.
 * **Visualization GUI**: A web interface (Community Edition) or legacy app displays the graph, revealing attack paths. BloodHound is available as an open-source Community Edition and a managed enterprise version. 
