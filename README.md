@@ -13,7 +13,9 @@ The mapping includes:
 🔸Focuses on actionable threat intel. Best for red teamss, offensive security professionals, penetration testers, ethical hackers, purple teams, vulnerability specialists, cybersecurity professional.
 
 🔸This resource delivers actionable threat intelligence tailored for Red Teams, penetration testers, ethical hackers, and purple team practitioners looking to harden or exploit AD environments. 
+
 ## Disclaimer
+
 ```
 +------------------------------------------------------------------------------------------------+
 |  ⚠️ EDUCATIONAL USE ONLY ⚠️                                                                   |
@@ -52,7 +54,7 @@ For brevity and clarity. the term "individual" will be used to represent both at
 
 # Credential Access [(TA0006)](https://attack.mitre.org/tactics/TA0006/)
 * **OS Credential Dumping** [(T1003)](https://attack.mitre.org/techniques/T1003/003/): OS Credential Dumping is a, if not the, primary method individuals use to transition from initial system access to full network compromise. By stealing password hashes or plaintext credentials stored in operating system memory or databases, individuals can escalate privileges and move laterally across an environment. This technique is frequently used by ransomware gangs and APT groups.<br>
-**🔸TL;DR**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.🔸
+<br>**🔸TL;DR**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.🔸
 * **Steal or Forge Authentication Certificates [(T1649)](https://attack.mitre.org/techniques/T1649/)**: Steal or Forge Authentication Certificates is a critical MITRE ATT&CK® technique focusing on abusing Active Directory Certificate Services (AD CS) to gain unauthorized access. Because AD CS enables certificate-based authentication (using certificates instead of passwords), compromising the certificate infrastructure allows individuals to bypass traditional password-based security controls, establish long-term persistence, and escalate privileges to the highest levels (e.g., Domain Admin).<br> 
 <br>**🔸TL;DR**: Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.🔸
 # Credential Access Tools
