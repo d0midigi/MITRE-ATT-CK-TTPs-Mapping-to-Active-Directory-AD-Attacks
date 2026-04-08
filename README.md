@@ -37,30 +37,31 @@ This resource delivers actionable threat intelligence tailored for Red Teams, pe
 
 ## Credential Access [(TA0006)](https://attack.mitre.org/tactics/TA0006/)
 * **OS Credential Dumping** [(T1003)](https://attack.mitre.org/techniques/T1003/003/): OS Credential Dumping (MITRE ATT&CK Technique T1003) is a, if not the, primary method threat actors use to transition from initial system access to full network compromise. By stealing password hashes or plaintext credentials stored in operating system memory or databases, attackers can escalate privileges and move laterally across an environment. This technique is frequently used by ransomware gangs and APT groups.<br>
-**🔸TL;DR**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.
-* **Steal or Forge Authentication Certificates (T1649)**: Steal or Forge Authentication Certificates (T1649) is a critical MITRE ATT&CK technique focusing on abusing Active Directory Certificate Services (AD CS) to gain unauthorized access. Because AD CS enables certificate-based authentication (using certificates instead of passwords), compromising the certificate infrastructure allows attackers to bypass traditional password-based security controls, establish long-term persistence, and escalate privileges to the highest levels (e.g., Domain Admin). 
-**TL;DR**: Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.
-### Tools
-* **Mimikatz**: Mimikatz is a powerful open-source post-exploitation tool designed to extract plain-text passwords, hashes, PINs, and Kerberos tickets directly from Windows memory (LSASS process). It is primarily used by attackers to escalate privileges, move laterally through networks, and create persistent access through techniques like pass-the-hash and Golden Ticket attacks.
-#### Key Capabilities and Functions:
+**🔸TL;DR**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.🔸
+* **Steal or Forge Authentication Certificates (T1649)**: Steal or Forge Authentication Certificates (T1649) is a critical MITRE ATT&CK technique focusing on abusing Active Directory Certificate Services (AD CS) to gain unauthorized access. Because AD CS enables certificate-based authentication (using certificates instead of passwords), compromising the certificate infrastructure allows attackers to bypass traditional password-based security controls, establish long-term persistence, and escalate privileges to the highest levels (e.g., Domain Admin).<br> 
+**🔸TL;DR**: Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.🔸
+# Tools
+## Mimikatz
+* Mimikatz is a powerful open-source post-exploitation tool designed to extract plain-text passwords, hashes, PINs, and Kerberos tickets directly from Windows memory (LSASS process). It is primarily used by attackers to escalate privileges, move laterally through networks, and create persistent access through techniques like pass-the-hash and Golden Ticket attacks.
+### Key Capabilities and Functions
 * **Credential Dumping (`sekurlsa`)**: Extracts credentials from memory, including user passwords in plain text, NTLM hashes, and Kerberos tickets.
 * **Pass-the-Hash (PtH)**: Uses stolen NTLM hashes to authenticate as a user without needing the original password.
 * **Pass-the-Ticket/Golden Ticket**: Generates forged Kerberos tickets to gain unauthorized domain access and impersonate any user, often indefinitely.
-* **Privilege Escalation**: Elevates low-level user access to administrator or SYSTEM-level privileges.
+* **Privilege Escalation**: Elevates low-level user access to administrator or `SYSTEM`-level privileges.
 * **Certificate Export**: Exports certificates and private keys from the Windows Certificate Store, even if marked as non-exportable.
 * **Fileless Execution**: Often executed in memory via PowerShell or similar methods to avoid detection on disk.
-* **Dumpert**: Dumpert is an open-source, specialized security tool designed to create a memory dump of the Local Security Authority Subsystem Service (LSASS) process on Windows operating systems. It is primarily used during red team engagements and penetration tests to steal credentials, such as password hashes and Kerberos tickets, while avoiding detection by antivirus (AV) and Endpoint Detection and Response (EDR) solutions. 
-#### Key Functions and Capabilities
+* **Dumpert**: [Dumpert](https://github.com/outflanknl/dumpert) is an open-source, specialized security tool designed to create a memory dump of the Local Security Authority Subsystem Service (LSASS) process on Windows operating systems. It is primarily used during red team engagements and penetration tests to steal credentials, such as password hashes and Kerberos tickets, while avoiding detection by antivirus (AV) and Endpoint Detection and Response (EDR) solutions. 
+## Key Functions and Capabilities
 * **LSASS Memory Dumping**: It extracts the memory of lsass.exe, where sensitive user credentials are stored, saving them into a `.dmp` file.
-* **AV/EDR Evasion**: Unlike standard tools (like `ProcDump` or Mimikatz), Dumpert avoids using common Windows API functions that are heavily monitored by security software.
-* **Direct System Calls (Syscalls)**: It bypasses user-mode hooks by executing system calls directly to the kernel, making it difficult for security products to detect the activity.
+* **AV/EDR Evasion**: Unlike standard tools (like [Sysinternals ProcDump](https://learn.microsoft.com/en-us/sysinternals/downloads/procdump) or Mimikatz), Dumpert avoids using common Windows API functions that are heavily monitored by security software.
+* **Direct System Calls [(Syscalls)](https://github.com/j00ru/windows-syscalls)**: It bypasses user-mode hooks by executing system calls directly to the kernel, making it difficult for security products to detect the activity.
 * **API Unhooking**: The tool unhooks API functions to further mask its activities.
-* **Fileless Operation (sRDI)**: It provides an sRDI (shellcode Reflective DLL Injection) version, allowing it to be injected directly into memory via Cobalt Strike, thus avoiding writing files to the disk. 
-#### Usage Context
-* **Credential Theft**: Once the lsass.dmp file is created, it can be analyzed offline using tools like Mimikatz or Pypykatz to extract plaintext passwords and hashes.
+* **Fileless Operation (sRDI)**: It provides an sRDI (shellcode Reflective DLL Injection) version, allowing it to be injected directly into memory via [Cobalt Strike](https://github.com/cobalt-strike), thus avoiding writing files to the disk. 
+## Usage Context
+* **Credential Theft**: Once the lsass.dmp file is created, it can be analyzed offline using tools like Mimikatz or [Pypykatz](https://github.com/skelsec/pypykatz) to extract plaintext passwords and hashes.
 * **Lateral Movement**: The stolen credentials enable attackers to move laterally across a network.
-* **Post-Exploitation**: It is used after gaining elevated privileges (SYSTEM) on a compromised system.
-* **Impacket (`secretsdump`)**: Impacket's secretsdump.py is a powerful, open-source Python script used to remotely or locally extract sensitive secrets—such as user password hashes and credentials—from Windows systems without installing an agent on the target machine. It is widely used by penetration testers for security auditing and by attackers for lateral movement and privilege escalation.
+* **Post-Exploitation**: It is used after gaining elevated privileges (`SYSTEM`) on a compromised system.
+* **Impacket (`secretsdump`)**: Impacket's `secretsdump.py` is a powerful, open-source Python script used to remotely or locally extract sensitive secrets—such as user password hashes and credentials—from Windows systems without installing an agent on the target machine. It is widely used by penetration testers for security auditing and by attackers for lateral movement and privilege escalation.
 #### Core Functionalities
 * **`secretsdump`**: Performs various techniques to dump secrets, including: 
 * **SAM and LSA Secrets Extraction**: It reads the Security Account Manager (SAM) and Local Security Authority (LSA) registry hives to obtain local user NTLM hashes, cleartext credentials, and cached domain credentials.
