@@ -1,4 +1,4 @@
-# MITRE ATT&CK Tactics, Techniques & Procedures (TTPs) Mapping to Active Directory (AD) Attacks
+# MITRE ATT&CK® Tactics, Techniques & Procedures (TTPs) Mapping to Active Directory (AD) Attacks
 > This in-depth guide maps popular and commonly-used Active Directory (AD) attack vectors to the MITRE ATT&CK® Framework. It provides a deep dive into TTPs for credential dumping, lateral movement, persistence, privilege escalation, including specialized AD CS exploitation. Designed for high-impact offensive operations, it features detection rules, attack simulations, and Windows-specific mitigation strategies.
 
 The mapping includes:
@@ -51,7 +51,7 @@ The mapping includes:
 ## Credential Access [(TA0006)](https://attack.mitre.org/tactics/TA0006/)
 * **OS Credential Dumping** [(T1003)](https://attack.mitre.org/techniques/T1003/003/): OS Credential Dumping is a, if not the, primary method threat actors use to transition from initial system access to full network compromise. By stealing password hashes or plaintext credentials stored in operating system memory or databases, attackers can escalate privileges and move laterally across an environment. This technique is frequently used by ransomware gangs and APT groups.<br>
 **🔸TL;DR**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.🔸
-* **Steal or Forge Authentication Certificates [(T1649)](https://attack.mitre.org/techniques/T1649/)**: Steal or Forge Authentication Certificates (T1649) is a critical MITRE ATT&CK technique focusing on abusing Active Directory Certificate Services (AD CS) to gain unauthorized access. Because AD CS enables certificate-based authentication (using certificates instead of passwords), compromising the certificate infrastructure allows attackers to bypass traditional password-based security controls, establish long-term persistence, and escalate privileges to the highest levels (e.g., Domain Admin).<br> 
+* **Steal or Forge Authentication Certificates [(T1649)](https://attack.mitre.org/techniques/T1649/)**: Steal or Forge Authentication Certificates (T1649) is a critical MITRE ATT&CK® technique focusing on abusing Active Directory Certificate Services (AD CS) to gain unauthorized access. Because AD CS enables certificate-based authentication (using certificates instead of passwords), compromising the certificate infrastructure allows attackers to bypass traditional password-based security controls, establish long-term persistence, and escalate privileges to the highest levels (e.g., Domain Admin).<br> 
 **🔸TL;DR**: Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.🔸
 # Tools
 ## Mimikatz
@@ -101,7 +101,7 @@ An attacker with local administrator privileges on one machine can use secretsdu
 * **Visualization GUI**: A web interface (Community Edition) or legacy app displays the graph, revealing attack paths. BloodHound is available as an open-source Community Edition and a managed enterprise version. 
 ---
 ## Lateral Movement (TA0008)
-Lateral Movement (TA0008) in the MITRE ATT&CK framework refers to the techniques cyber adversaries use to navigate through a network, moving from an initially compromised system to other hosts, to expand access, steal data, or deploy ransomware. It is a critical post-compromise stage, often involving stolen credentials and legitimate tools to evade detection. 
+Lateral Movement (TA0008) in the MITRE ATT&CK® framework refers to the techniques cyber adversaries use to navigate through a network, moving from an initially compromised system to other hosts, to expand access, steal data, or deploy ransomware. It is a critical post-compromise stage, often involving stolen credentials and legitimate tools to evade detection. 
 ### Key Aspects and Techniques
 Attackers use several methods to move laterally, often blending in with authorized user activity: 
 * **Remote Services (T1021)**: Utilizing valid credentials to log in remotely via RDP, SSH, or VPN.
@@ -172,11 +172,11 @@ RDP is widely used in corporate environments for IT management, supporting remot
 * BloodHound/SharpHound for path analysis
 
 ## Persistence (TA0003)
-Persistence is a core tactic within the MITRE ATT&CK framework, representing techniques that adversaries use to maintain access to a target system, even after disruptions such as consistent reboots, credential changes, or network interruptions. The ultimate goal of this tactic is to ensure long-term, continued presence on a compromised host to facilitate further malicious activity, such as data theft, espionage, or lateral movement. With over 20 distinct techniques categorized under it, persistence is crucial for threat actors because it allows them to retain a foothold even if their initial entry method is discovered and blocked.
+Persistence is a core tactic within the MITRE ATT&CK® framework, representing techniques that adversaries use to maintain access to a target system, even after disruptions such as consistent reboots, credential changes, or network interruptions. The ultimate goal of this tactic is to ensure long-term, continued presence on a compromised host to facilitate further malicious activity, such as data theft, espionage, or lateral movement. With over 20 distinct techniques categorized under it, persistence is crucial for threat actors because it allows them to retain a foothold even if their initial entry method is discovered and blocked.
 # Persistence Attack Techniques and Tools
 ## 1. Account Manipulation (T1098)
 ### Attack Technique Details
-Account Manipulation (T1098) is a MITRE ATT&CK technique where adversaries modify existing, legitimate user or administrator accounts to maintain persistent access, escalate privileges, or evade detection. Unlike creating new accounts (T1136), which often triggers security alerts, manipulating existing accounts allows attackers to hide in plain sight using valid credentials.
+Account Manipulation (T1098) is a MITRE ATT&CK® technique where adversaries modify existing, legitimate user or administrator accounts to maintain persistent access, escalate privileges, or evade detection. Unlike creating new accounts (T1136), which often triggers security alerts, manipulating existing accounts allows attackers to hide in plain sight using valid credentials.
 ### 1. Modifying Privileged Groups (T1098.007) 
 * Attackers modify group memberships to elevate privileges from a standard user to an administrator or to gain access to sensitive resources.
 * **Windows**: Attackers use commands like `net localgroup "Administrators" [username] /add` or `net group "Domain Admins" [username] /add` to promote a compromised account.
@@ -539,7 +539,7 @@ These attacks leverage the 'intended" logic of AD to gain unauthorized access.
 ### 6. Coerced Authentication & NTLM Relaying
 These techniques allow an individual to move laterally and escalate privileges without ever needing to crack a password or find a plaintext credential.
 ### TTPs:
-* **Adversary-in-the-Middle (AitM) (T1557.001)**: Adversary-in-the-Middle (AitM) is a specific cybersecurity sub-technique within the MITRE ATT&CK framework where an attacker poisons themselves between a user and a legitimate network resource to intercept and manipulates authentication traffic. By exploiting weak network protocols (LLMNR, NBT-NS, mDNS), attackers are able to trick systems into sending authentication hashes to the attacker-controlled machine, which are then relayed to other services to gain unauthorized access.
+* **Adversary-in-the-Middle (AitM) (T1557.001)**: Adversary-in-the-Middle (AitM) is a specific cybersecurity sub-technique within the MITRE ATT&CK® framework where an attacker poisons themselves between a user and a legitimate network resource to intercept and manipulates authentication traffic. By exploiting weak network protocols (LLMNR, NBT-NS, mDNS), attackers are able to trick systems into sending authentication hashes to the attacker-controlled machine, which are then relayed to other services to gain unauthorized access.
 * **Exploitation of Remote Services (T1210)**: This involves forcing a high-privileged machine (like a Domain Controller) to authenticate to you, then "relaying" that session to a target (like AD CS or a sensitive, mission-critical server).
 ### Primary Tools:
 * **PetitPotam/SpoolSample**: Coerces a machine account to authenticate via MS-EFSR or Print Spooler.
@@ -561,8 +561,8 @@ These techniques allow an individual to move laterally and escalate privileges w
 
 ### 8. Local Privilege Escalation (LPE) to Domain Access
 ### TTPs:
-* **Access Token Manipulation (T1134)**: Access Token Manipulation (T1134) is a MITRE ATT&CK technique used by adversaries to gain unauthorized access to systems, escalate privileges, and evade security controls by manipulating the Windows security tokens that are associated with processes and threads. This technique primarily targets Windows environments, allowing an attacker to change the security context of a running process to appear as if it is running as a different user (e.g., Administrator or `NT AUTHORITY\SYSTEM`).
-* **Boot or Logon Autostart Execution (T1547)**: Boot or Logon AutoStart Execution (T1547) is a MITRE ATT&CK technique where attackers configure malicious programs to run automatically when a system boots or a user logs in. By abusing system startup mechanisms like registry keys, startup folders, or `systemd`, they achieve persistence, privilege escalation, and stealth.
+* **Access Token Manipulation (T1134)**: Access Token Manipulation (T1134) is a MITRE ATT&CK® technique used by adversaries to gain unauthorized access to systems, escalate privileges, and evade security controls by manipulating the Windows security tokens that are associated with processes and threads. This technique primarily targets Windows environments, allowing an attacker to change the security context of a running process to appear as if it is running as a different user (e.g., Administrator or `NT AUTHORITY\SYSTEM`).
+* **Boot or Logon Autostart Execution (T1547)**: Boot or Logon AutoStart Execution (T1547) is a MITRE ATT&CK® technique where attackers configure malicious programs to run automatically when a system boots or a user logs in. By abusing system startup mechanisms like registry keys, startup folders, or `systemd`, they achieve persistence, privilege escalation, and stealth.
 ### Primary Tools:
 * **SharpUp / Seatbelt**: Audits for local misconfigurations (unquoted service paths, modifiable binaries).
 * **GodPotato / PetitPotato**: Modern "Potato" exploits to escalate from Service Accounts to `SYSTEM`.
