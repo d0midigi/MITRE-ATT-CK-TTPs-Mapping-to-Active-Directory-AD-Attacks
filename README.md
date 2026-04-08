@@ -36,8 +36,8 @@ This resource delivers actionable threat intelligence tailored for Red Teams, pe
 
 
 ## Credential Access [(TA0006)](https://attack.mitre.org/tactics/TA0006/)
-* **OS Credential Dumping** [(T1003)](https://attack.mitre.org/techniques/T1003/003/): OS Credential Dumping (MITRE ATT&CK Technique T1003) is a, if not the, primary method threat actors use to transition from initial system access to full network compromise. By stealing password hashes or plaintext credentials stored in operating system memory or databases, attackers can escalate privileges and move laterally across an environment. This technique is frequently used by ransomware gangs and APT groups.
-**TL;DR**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.
+* **OS Credential Dumping** [(T1003)](https://attack.mitre.org/techniques/T1003/003/): OS Credential Dumping (MITRE ATT&CK Technique T1003) is a, if not the, primary method threat actors use to transition from initial system access to full network compromise. By stealing password hashes or plaintext credentials stored in operating system memory or databases, attackers can escalate privileges and move laterally across an environment. This technique is frequently used by ransomware gangs and APT groups.<br>
+**🔸TL;DR**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.
 * **Steal or Forge Authentication Certificates (T1649)**: Steal or Forge Authentication Certificates (T1649) is a critical MITRE ATT&CK technique focusing on abusing Active Directory Certificate Services (AD CS) to gain unauthorized access. Because AD CS enables certificate-based authentication (using certificates instead of passwords), compromising the certificate infrastructure allows attackers to bypass traditional password-based security controls, establish long-term persistence, and escalate privileges to the highest levels (e.g., Domain Admin). 
 **TL;DR**: Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.
 ### Tools
