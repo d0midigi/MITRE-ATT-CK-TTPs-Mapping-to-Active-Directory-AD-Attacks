@@ -1,5 +1,6 @@
 # MITRE ATT&CK® Tactics, Techniques & Procedures (TTPs) Mapping to Active Directory (AD) Attacks
-https://blinkies.cafe/b/blinkiesCafe-Ly.gif
+
+<img src="https://blinkies.cafe/b/blinkiesCafe-Ly.gif" alt="Alt text">
 > This in-depth guide maps popular and commonly-used Active Directory (AD) attack vectors to the MITRE ATT&CK® Framework. It provides a deep dive into TTPs for credential dumping, lateral movement, persistence, privilege escalation, including specialized AD CS exploitation. Designed for high-impact offensive operations, it features detection rules, attack simulations, and Windows-specific mitigation strategies.
 
 The mapping includes:
