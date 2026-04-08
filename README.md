@@ -8,12 +8,13 @@ The mapping includes:
 * **Tradecraft**: Pro-tips, best practices, and common pitfalls for offensive tools.
 * **Evasion**: Proven strategies to bypass Blue Team defenses and security controls. 
 
-Focuses on actionable threat intel. Best for red teamss, offensive security professionals, penetration testers, ethical hackers, purple teams, vulnerability specialists, cybersecurity professional.
+🔸Focuses on actionable threat intel. Best for red teamss, offensive security professionals, penetration testers, ethical hackers, purple teams, vulnerability specialists, cybersecurity professional.
 
-This resource delivers actionable threat intelligence tailored for Red Teams, penetration testers, ethical hackers, and purple team practitioners looking to harden or exploit AD environments. 
+🔸This resource delivers actionable threat intelligence tailored for Red Teams, penetration testers, ethical hackers, and purple team practitioners looking to harden or exploit AD environments. 
 
-**This repository is intended strictly for educational purposes, designed to assist security professionals, researchers, and ethical hackers in understanding attacker tactics, techniques, and procedures (TTPs) to strengthen defensive strategies. The authors are not liable for any misuse of this information.**
- 
+⚠️**Educational Use Only**
+**This repository is intended strictly for educational purposes, designed to assist security professionals, researchers, and ethical hackers in understanding attacker tactics, techniques, and procedures (TTPs) to strengthen defensive strategies. The authors are not liable for any misuse of this information. Misuse or abuse of the material provided herein against digital devices or networks for which you do not explcitly own or do not have explicit written permission from device and/or network owners is illegal and can result in legal action.**⚠️
+---
 ## Table of Contents
 * [Credential Access (TA0006)](#credential-access)
 * [Lateral Movement (TA0008)](#lateral-movement)
@@ -36,9 +37,9 @@ This resource delivers actionable threat intelligence tailored for Red Teams, pe
 
 
 ## Credential Access [(TA0006)](https://attack.mitre.org/tactics/TA0006/)
-* **OS Credential Dumping** [(T1003)](https://attack.mitre.org/techniques/T1003/003/): OS Credential Dumping (MITRE ATT&CK Technique T1003) is a, if not the, primary method threat actors use to transition from initial system access to full network compromise. By stealing password hashes or plaintext credentials stored in operating system memory or databases, attackers can escalate privileges and move laterally across an environment. This technique is frequently used by ransomware gangs and APT groups.<br>
+* **OS Credential Dumping** [(T1003)](https://attack.mitre.org/techniques/T1003/003/): OS Credential Dumping is a, if not the, primary method threat actors use to transition from initial system access to full network compromise. By stealing password hashes or plaintext credentials stored in operating system memory or databases, attackers can escalate privileges and move laterally across an environment. This technique is frequently used by ransomware gangs and APT groups.<br>
 **🔸TL;DR**: Techniques like LSASS memory dumping, `ntds.dit` theft and SAM hive dumping to obtain NTLM hashes or plaintext passwords.🔸
-* **Steal or Forge Authentication Certificates (T1649)**: Steal or Forge Authentication Certificates (T1649) is a critical MITRE ATT&CK technique focusing on abusing Active Directory Certificate Services (AD CS) to gain unauthorized access. Because AD CS enables certificate-based authentication (using certificates instead of passwords), compromising the certificate infrastructure allows attackers to bypass traditional password-based security controls, establish long-term persistence, and escalate privileges to the highest levels (e.g., Domain Admin).<br> 
+* **Steal or Forge Authentication Certificates [(T1649)](https://attack.mitre.org/techniques/T1649/)**: Steal or Forge Authentication Certificates (T1649) is a critical MITRE ATT&CK technique focusing on abusing Active Directory Certificate Services (AD CS) to gain unauthorized access. Because AD CS enables certificate-based authentication (using certificates instead of passwords), compromising the certificate infrastructure allows attackers to bypass traditional password-based security controls, establish long-term persistence, and escalate privileges to the highest levels (e.g., Domain Admin).<br> 
 **🔸TL;DR**: Abuse of AD Certificate Services (AD CS) for persistence or privilege escalation purposes.🔸
 # Tools
 ## Mimikatz
